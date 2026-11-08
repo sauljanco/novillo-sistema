@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import './style.css'
 
@@ -8,6 +8,58 @@ const modules = [
   { number: '03', title: 'Personal', detail: 'Turnos, asistencia y pagos por jornada o media jornada.' },
   { number: '04', title: 'Inventario', detail: 'Productos, compras, inversión y proveedores.' },
 ]
+
+type Product = {
+  id: string
+  category: string
+  name: string
+  presentation: string
+  price_cents: number
+}
+
+function Menu() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading')
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch('/api/menu', { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('No se pudo cargar el menú')
+        return response.json() as Promise<{ products: Product[] }>
+      })
+      .then(({ products }) => {
+        setProducts(products)
+        setState('ready')
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setState('error')
+      })
+    return () => controller.abort()
+  }, [])
+
+  const categories = [...new Set(products.map((product) => product.category))]
+
+  return (
+    <section className="menu-section" aria-labelledby="menu-title">
+      <div className="section-heading"><div><span className="section-kicker">DATOS EN NEON</span><h2 id="menu-title">Menú inicial</h2></div><span className="section-count">Precios en Bs</span></div>
+      <p className="menu-intro">Catálogo transcrito del menú recibido. Antes de operar, el restaurante debe confirmar nombres, presentaciones y precios.</p>
+      {state === 'loading' && <p role="status">Cargando menú…</p>}
+      {state === 'error' && <p role="alert">El menú no está disponible en este momento.</p>}
+      {state === 'ready' && <div className="menu-grid">{categories.map((category) => (
+        <div className="menu-category" key={category}>
+          <h3>{category}</h3>
+          {products.filter((product) => product.category === category).map((product) => (
+            <div className="menu-row" key={product.id}>
+              <div><strong>{product.name}</strong><small>{product.presentation}</small></div>
+              <span>Bs {(product.price_cents / 100).toFixed(2)}</span>
+            </div>
+          ))}
+        </div>
+      ))}</div>}
+    </section>
+  )
+}
 
 function App() {
   return (
@@ -31,6 +83,7 @@ function App() {
         <div className="section-heading"><div><span className="section-kicker">PRÓXIMAMENTE</span><h2 id="modules-title">Módulos del sistema</h2></div><span className="section-count">01 — 04</span></div>
         <div className="module-grid">{modules.map((module) => <article className="module" key={module.number}><span className="module-number">{module.number}</span><h3>{module.title}</h3><p>{module.detail}</p></article>)}</div>
       </section>
+      <Menu />
       <footer>© {new Date().getFullYear()} Novillo <span>·</span> Sacaba, Cochabamba</footer>
     </main>
   )

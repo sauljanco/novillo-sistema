@@ -1,0 +1,63 @@
+-- Catálogo inicial transcrito del menú del cliente. Revisar precios antes de operar.
+CREATE TABLE IF NOT EXISTS public.products (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  category text NOT NULL,
+  name text NOT NULL,
+  presentation text NOT NULL,
+  price_cents integer NOT NULL CHECK (price_cents >= 0),
+  active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT products_unique_presentation UNIQUE (category, name, presentation)
+);
+
+CREATE INDEX IF NOT EXISTS products_active_category_name_idx
+  ON public.products (category, name, presentation) WHERE active = true;
+
+INSERT INTO public.products (category, name, presentation, price_cents) VALUES
+  ('Carnes','Bife chorizo','Plato',7500),
+  ('Carnes','Churrasco','Plato',7500),
+  ('Carnes','Cuadril','Plato',7500),
+  ('Carnes','Punta de S','Plato',7500),
+  ('Carnes','Asado de tira','Plato',7500),
+  ('Carnes','Filete de lomito','Plato',7500),
+  ('Carnes','Parrilla mixta','3 personas',17000),
+  ('Carnes','Pique macho','Entero',13000),
+  ('Carnes','Pique macho','Medio',7000),
+  ('Carnes','Salchipapa','Plato',2500),
+  ('Aves','Codorniz','Plato',6500),
+  ('Aves','Pollo','Cuarto',4000),
+  ('Entremeses','Chorizo','Unidad',1200),
+  ('Entremeses','Morcilla','Unidad',1000),
+  ('Entremeses','Ubre','Unidad',1200),
+  ('Guarniciones','Papa','Porción',1000),
+  ('Guarniciones','Yuca hervida o frita','Porción',1000),
+  ('Guarniciones','Arroz con queso','Porción',1000),
+  ('Guarniciones','Arroz','Porción',1000),
+  ('Jugos','Limonada','Jarra',2500),
+  ('Jugos','Limonada','Media jarra',1500),
+  ('Jugos','Limonada','Vaso',700),
+  ('Jugos','Maracuyá','Jarra',2500),
+  ('Jugos','Maracuyá','Media jarra',1500),
+  ('Jugos','Maracuyá','Vaso',700),
+  ('Jugos','Guayaba','Jarra',2500),
+  ('Jugos','Guayaba','Media jarra',1500),
+  ('Jugos','Guayaba','Vaso',700),
+  ('Jugos','Piña con hierbabuena','Jarra',2500),
+  ('Jugos','Piña con hierbabuena','Media jarra',1500),
+  ('Jugos','Piña con hierbabuena','Vaso',700),
+  ('Gaseosas y cerveza','Jugo del Valle','1 L',1800),
+  ('Gaseosas y cerveza','Gaseosa','1 L',1500),
+  ('Gaseosas y cerveza','Gaseosa','2 L',2000),
+  ('Gaseosas y cerveza','Gaseosa','500 ml',1000),
+  ('Gaseosas y cerveza','Huari','Por confirmar',3000),
+  ('Gaseosas y cerveza','Paceña','Por confirmar',2500),
+  ('Gaseosas y cerveza','Corona','Por confirmar',2500),
+  ('Vinos','Kolberg','Por confirmar',6500),
+  ('Vinos','Aranjuez Terruño','Por confirmar',6500),
+  ('Vinos','Campos de Solana','Por confirmar',6500),
+  ('Vinos','Toro Viejo','Por confirmar',7500),
+  ('Vinos','Santa Ana','Por confirmar',7500),
+  ('Vinos','Reservado','Por confirmar',18000),
+  ('Vinos','Casillero del Diablo','Por confirmar',18000)
+ON CONFLICT (category, name, presentation) DO NOTHING;
