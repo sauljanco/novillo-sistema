@@ -7,8 +7,8 @@ export const neonAuth = import.meta.env.VITE_NEON_AUTH_URL
 
 export async function authorizedFetch(path: string, init?: RequestInit): Promise<Response> {
   if (!neonAuth) throw new Error('Autenticación sin configurar')
-  const result = await neonAuth.getSession()
-  const token: string | null = result.data?.session?.token ?? null
+  const result = await neonAuth.token()
+  const token: string | null = result.data?.token ?? null
   if (!token) throw new Error('La sesión venció. Vuelve a ingresar.')
   return fetch(path, {
     ...init,

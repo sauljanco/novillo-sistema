@@ -34,7 +34,7 @@ La página `/?vista=operacion` es para el personal. La segunda pantalla `/?vista
 
 En Producción, Vercel necesita `VITE_NEON_AUTH_URL` (URL pública) y `NEON_AUTH_BASE_URL` (misma URL para verificar JWT), además de `DATABASE_URL` (Secret). El dominio de producción debe estar en la lista de dominios confiables de Neon Auth. La función utiliza `${NEON_AUTH_BASE_URL}/.well-known/jwks.json` y consulta el rol en cada solicitud.
 
-Para dar acceso al primer administrador, este crea su propia cuenta en la página de operación. Después se obtiene su `user_id` desde Neon Auth y se inserta explícitamente en `staff_access` con rol `administrador`. Nunca se debe asignar el rol por correo enviado por el navegador ni convertir automáticamente al primer registro en administrador.
+Para dar acceso al primer administrador, este crea su propia cuenta y verifica el correo con el código enviado por Neon. Después se obtiene su `user_id` desde Neon Auth y se inserta explícitamente en `staff_access` con rol `administrador`. La API también comprueba `emailVerified = true`. Nunca se debe asignar el rol por correo enviado por el navegador ni convertir automáticamente al primer registro en administrador.
 
 La caja todavía no incluye cierre, otros ingresos/egresos o devoluciones. Las fichas internas no son facturas fiscales. Antes de operar con dinero real, hay que validar con el restaurante el menú y los medios de pago, completar el arqueo y probar el flujo con una cuenta autorizada.
 

@@ -14,10 +14,11 @@ export function Operations() {
 
 function OperationsWithAuth() {
   const session = neonAuth!.useSession()
-  const [mode, setMode] = useState<'sign-in' | 'sign-up'>('sign-in')
+  const [mode, setMode] = useState<'sign-in' | 'sign-up' | 'verify'>('sign-in')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [otp, setOtp] = useState('')
   const [message, setMessage] = useState('')
   const [staff, setStaff] = useState<Staff | null>(null)
   const [cash, setCash] = useState<Cash | null>(null)
@@ -60,11 +61,18 @@ function OperationsWithAuth() {
   async function login(event: React.FormEvent) {
     event.preventDefault(); setBusy(true); setMessage('')
     try {
+      if (mode === 'verify') {
+        const result = await neonAuth!.emailOtp.verifyEmail({ email, otp })
+        if (result.error) setMessage(result.error.message ?? 'Código inválido')
+        else { setMode('sign-in'); setPassword(''); setMessage('Correo verificado. Ya puedes ingresar.') }
+        return
+      }
       const result = mode === 'sign-in'
         ? await neonAuth!.signIn.email({ email, password })
         : await neonAuth!.signUp.email({ name, email, password })
       if (result.error) setMessage(result.error.message ?? 'No se pudo ingresar')
-      else setMessage(mode === 'sign-up' ? 'Cuenta creada. Un administrador debe asignarte un rol.' : '')
+      else if (mode === 'sign-up') { setMode('verify'); setMessage('Revisa tu correo e ingresa el código de verificación.') }
+      else setMessage('')
     } catch { setMessage('No se pudo conectar con Neon Auth.') }
     finally { setBusy(false) }
   }
@@ -104,12 +112,22 @@ function OperationsWithAuth() {
   if (!session.data?.user) return <section className="work-panel"><h2>Acceso del personal</h2>
     <form onSubmit={login} className="auth-form">
       {mode === 'sign-up' && <label>Nombre<input required value={name} onChange={(e) => setName(e.target.value)} /></label>}
-      <label>Correo<input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
-      <label>Contraseña<input required type="password" minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} /></label>
-      <button disabled={busy}>{mode === 'sign-in' ? 'Ingresar' : 'Crear cuenta'}</button>
+      <label>Correo<input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} readOnly={mode === 'verify'} /></label>
+      {mode === 'verify'
+        ? <label>Código de verificación<input required inputMode="numeric" autoComplete="one-time-code" value={otp} onChange={(e) => setOtp(e.target.value)} /></label>
+        : <label>Contraseña<input required type="password" minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} /></label>}
+      <button disabled={busy}>{mode === 'sign-in' ? 'Ingresar' : mode === 'sign-up' ? 'Crear cuenta' : 'Verificar correo'}</button>
     </form>
+    {mode === 'verify' && <button className="text-button" onClick={async () => { const result = await neonAuth!.emailOtp.sendVerificationOtp({ email, type: 'email-verification' }); setMessage(result.error ? (result.error.message ?? 'No se pudo reenviar') : 'Código enviado otra vez.') }}>Reenviar código</button>}
     <button className="text-button" onClick={() => { setMode(mode === 'sign-in' ? 'sign-up' : 'sign-in'); setMessage('') }}>{mode === 'sign-in' ? 'Crear cuenta' : 'Ya tengo cuenta'}</button>
+    {mode === 'sign-in' && <button className="text-button" onClick={() => { setMode('verify'); setMessage('Solicita un código si no lo recibiste.') }}>Verificar mi correo</button>}
     {message && <p role="alert">{message}</p>}
+  </section>
+
+  if (session.data.user.emailVerified === false) return <section className="work-panel"><h2>Verifica tu correo</h2><p>La cuenta necesita un código enviado a {session.data.user.email}.</p>
+    <form className="auth-form" onSubmit={async (event) => { event.preventDefault(); setBusy(true); const result = await neonAuth!.emailOtp.verifyEmail({ email: session.data!.user.email, otp }); setMessage(result.error ? (result.error.message ?? 'Código inválido') : 'Correo verificado. Actualizando sesión…'); setBusy(false); if (!result.error) location.reload() }}>
+      <label>Código de verificación<input required inputMode="numeric" autoComplete="one-time-code" value={otp} onChange={(e) => setOtp(e.target.value)} /></label><button disabled={busy}>Verificar correo</button>
+    </form><button className="text-button" onClick={async () => { const result = await neonAuth!.emailOtp.sendVerificationOtp({ email: session.data!.user.email, type: 'email-verification' }); setMessage(result.error ? (result.error.message ?? 'No se pudo enviar') : 'Código enviado.') }}>Enviar código</button>{message && <p role="status">{message}</p>}
   </section>
 
   if (!staff) return <section className="work-panel"><h2>Acceso pendiente</h2><p>{message || 'Comprobando tu autorización…'}</p><button onClick={() => neonAuth!.signOut()}>Salir</button></section>
