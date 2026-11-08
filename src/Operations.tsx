@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { authorizedFetch, neonAuth } from './auth'
+import { AdminPanels, adminTabs } from './AdminPanels'
 
 type Product = { id: string; category: string; name: string; presentation: string; price_cents: number }
-type Staff = { display_name: string; role: 'administrador' | 'caja' | 'cocina' }
+type Staff = { display_name: string; role: 'superadministrador' | 'administrador' | 'caja' | 'cocina' }
 type Cash = { id: string; opening_cash_cents: number; cash_sales_cents: number; qr_sales_cents: number }
 type Order = { id: string; ticket_number: number; total_cents: number; payment_method: string; status: string; items: { name: string; presentation: string; quantity: number }[] }
 const money = (cents: number) => `Bs ${(cents / 100).toFixed(2)}`
@@ -29,6 +30,7 @@ function OperationsWithAuth() {
   const [counted, setCounted] = useState('0')
   const [closing, setClosing] = useState<{ expected_cash_cents: number; difference_cents: number } | null>(null)
   const [method, setMethod] = useState<'efectivo' | 'qr'>('efectivo')
+  const [panel, setPanel] = useState('operacion')
   const [busy, setBusy] = useState(false)
   const [lastTicket, setLastTicket] = useState<number | null>(null)
   const [lastPaidTotal, setLastPaidTotal] = useState(0)
@@ -149,7 +151,16 @@ function OperationsWithAuth() {
 
   if (!staff) return <section className="work-panel"><h2>Acceso pendiente</h2><p>{message || 'Comprobando tu autorización…'}</p><button onClick={() => refresh().catch((error) => setMessage(error instanceof Error ? error.message : 'No se pudo validar la sesión.'))}>Reintentar</button> <button onClick={() => neonAuth!.signOut()}>Salir</button></section>
 
-  return <section className="work-panel"><div className="work-header"><div><span className="section-kicker">OPERACIÓN</span><h2>Atención y caja</h2><p>{staff.display_name} · {staff.role}</p></div><button className="text-button" onClick={() => neonAuth!.signOut()}>Salir</button></div>
+  const isAdmin = staff.role === 'superadministrador' || staff.role === 'administrador'
+  const navigation = <nav className="panel-nav" aria-label="Paneles del sistema">
+    <button className={panel === 'operacion' ? 'selected' : ''} onClick={() => setPanel('operacion')}>Atención y caja</button>
+    {isAdmin && adminTabs.filter(([key]) => key !== 'accesos' || staff.role === 'superadministrador').map(([key, label]) =>
+      <button key={key} className={panel === key ? 'selected' : ''} onClick={() => setPanel(key)}>{label}</button>)}
+  </nav>
+
+  if (panel !== 'operacion' && isAdmin) return <section className="work-panel"><div className="work-header"><div><span className="section-kicker">SISTEMA DE GESTIÓN</span><p>{staff.display_name} · {staff.role}</p></div><button className="text-button" onClick={() => neonAuth!.signOut()}>Salir</button></div>{navigation}<AdminPanels panel={panel} isSuper={staff.role === 'superadministrador'} /></section>
+
+  return <section className="work-panel"><div className="work-header"><div><span className="section-kicker">OPERACIÓN</span><h2>Atención y caja</h2><p>{staff.display_name} · {staff.role}</p></div><button className="text-button" onClick={() => neonAuth!.signOut()}>Salir</button></div>{navigation}
     {message && <p role="status" className="notice">{message}</p>}
     {closing && <p className="notice" role="status">Caja cerrada. Efectivo esperado {money(closing.expected_cash_cents)} · Diferencia {money(closing.difference_cents)}.</p>}
     {staff.role !== 'cocina' && (!cash ? <form onSubmit={openCash} className="cash-open"><h3>Abrir caja</h3><label>Fondo inicial en Bs<input type="number" min="0" step="0.01" value={opening} onChange={(e) => setOpening(e.target.value)} /></label><button disabled={busy}>Abrir turno</button></form>

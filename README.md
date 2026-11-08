@@ -10,7 +10,7 @@ Sistema de gestión para el restaurante Novillo (Sacaba, Cochabamba).
 - [Menú inicial transcrito](menu-inicial.csv)
 - [Prototipo local Python/SQLite](PROTOTIPO.md)
 
-La base web usa React + TypeScript + Vite y se despliega en Vercel. El menú se lee de Neon. El primer flujo operativo incluye acceso del personal, apertura de caja, pedido cobrado, ficha y segunda pantalla. El proyecto Neon de trabajo está en la organización gratuita Novillo Desarrollo. El prototipo local Python/SQLite sigue disponible como referencia de reglas del negocio.
+La base web usa React + TypeScript + Vite y se despliega en Vercel. Los datos se guardan en Neon. El sistema incluye atención y caja, segunda pantalla, resumen, personal y planilla, inventario, compras e inversión, catálogo, reportes y control de accesos. El proyecto Neon está en la organización gratuita Novillo Desarrollo. El prototipo local Python/SQLite sigue disponible como referencia de reglas del negocio.
 
 ## Desarrollo web
 
@@ -30,13 +30,15 @@ El despliegue de Vercel usa el directorio raíz, preset **Vite**, comando `npm r
 
 `db/migrations/0002_operations.sql` contiene roles, sesiones de caja, pedidos, líneas y la función transaccional que genera la ficha. `/api/me`, `/api/cash` y `/api/orders` requieren un JWT de Neon Auth y un registro activo en `staff_access`; registrarse por sí solo no otorga acceso. El precio y el total se recalculan en Postgres con el catálogo vigente. El QR se registra manualmente y no se concilia con un banco; no se debe tratar como pago bancario confirmado.
 
+`db/migrations/0003_cash_close.sql` implementa el cierre de caja. `db/migrations/0004_management.sql` agrega el rol `superadministrador`, personal, turnos, asistencias, pagos, proveedores, inventario, compras y movimientos. `GET/POST /api/admin` solo permite la gestión a administradores; el control de accesos exige `superadministrador`. Las compras de insumos aumentan existencias en una misma transacción. Los pagos de planilla se registran por separado de caja.
+
 La página `/?vista=operacion` es para el personal. La segunda pantalla `/?vista=cliente` se abre en otra ventana del mismo navegador y perfil, en el mismo equipo. Se sincroniza localmente mediante `BroadcastChannel` y `localStorage`; no transmite el resumen a otro dispositivo.
 
 En Producción, Vercel necesita `VITE_NEON_AUTH_URL` (URL pública) y `NEON_AUTH_BASE_URL` (misma URL para verificar JWT), además de `DATABASE_URL` (Secret). El dominio de producción debe estar en la lista de dominios confiables de Neon Auth. La función utiliza `${NEON_AUTH_BASE_URL}/.well-known/jwks.json` y consulta el rol en cada solicitud.
 
 Para dar acceso al primer administrador, este crea su propia cuenta y verifica el correo con el código enviado por Neon. Después se obtiene su `user_id` desde Neon Auth y se inserta explícitamente en `staff_access` con rol `administrador`. La API también comprueba `emailVerified = true`. Nunca se debe asignar el rol por correo enviado por el navegador ni convertir automáticamente al primer registro en administrador.
 
-El cierre de caja guarda el efectivo contado y calcula la diferencia contra el fondo inicial más ventas en efectivo; las ventas QR se muestran aparte. Todavía faltan otros ingresos/egresos, devoluciones y una conciliación bancaria. Las fichas internas no son facturas fiscales. Antes de operar con dinero real, hay que validar con el restaurante el menú y los medios de pago y probar el flujo completo con una cuenta autorizada.
+El cierre de caja guarda el efectivo contado y calcula la diferencia contra el fondo inicial más ventas en efectivo; las ventas QR se muestran aparte. Todavía faltan otros ingresos/egresos, devoluciones, recetas para descontar insumos automáticamente, conciliación bancaria y facturación fiscal. Los pagos de planilla y compras no alteran el arqueo de caja automáticamente. Antes de operar con dinero real, hay que validar el menú, las tarifas, las existencias, las reglas de caja y los medios de pago con el restaurante.
 
 Para probar la API localmente, configura `DATABASE_URL` en tu entorno local sin subirlo a Git. La aplicación Vite del navegador nunca recibe esta variable.
 

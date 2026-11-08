@@ -1,7 +1,7 @@
 import { neon, type NeonQueryFunction } from '@neondatabase/serverless'
 import { createRemoteJWKSet, jwtVerify } from 'jose'
 
-export type Role = 'administrador' | 'caja' | 'cocina'
+export type Role = 'superadministrador' | 'administrador' | 'caja' | 'cocina'
 export type Staff = { user_id: string; display_name: string; role: Role }
 
 const authUrl = process.env.NEON_AUTH_BASE_URL
