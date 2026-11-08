@@ -1,82 +1,69 @@
-# Arquitectura propuesta para Novillo
+# Arquitectura de Novillo
 
-Decisión: React + TypeScript + Vite para la aplicación; Supabase para Postgres, Auth y Realtime; Vercel para publicar el frontend. El prototipo actual en Python/SQLite queda como referencia del flujo, no como backend de producción.
+Decisión: React + TypeScript + Vite para la interfaz; Neon Postgres y Better Auth para datos e identidad; Vercel para publicar la aplicación. El prototipo Python/SQLite queda como referencia del flujo, no como backend de producción.
+
+## Estado de provisión
+
+- Proyecto Neon `novillo-sistema`, ID `damp-mouse-42307496`, región AWS São Paulo, con Postgres y Better Auth.
+- Se creó inicialmente en una organización **Launch** de pago. Existe una organización **Free** llamada `Novillo Desarrollo`, pero el traslado del proyecto está pendiente de autorización específica. No conectar ni poner en uso el proyecto hasta resolver su ubicación y facturación.
+- [Consola del proyecto](https://console.neon.tech/app/projects/damp-mouse-42307496).
 
 ## Piezas de la stack
 
 | Capa | Tecnología | Uso |
 | --- | --- | --- |
-| Interfaz | React, TypeScript, Vite | Pantallas de caja, cocina, administración y cliente |
-| Navegación | React Router | Rutas y acceso según rol |
-| Datos remotos | TanStack Query + supabase-js | Consultas, caché e invalidación |
-| Formularios | React Hook Form + Zod | Validación de productos, importes, jornadas y compras |
+| Interfaz | React, TypeScript, Vite | Caja, cocina, administración y pantalla del cliente |
+| Navegación | React Router | Rutas según función |
+| Consultas | TanStack Query | Caché, refresco e invalidación |
+| Formularios | React Hook Form + Zod | Validación de importes, jornadas y compras |
 | Diseño | CSS/Tailwind CSS | Interfaz táctil para caja y vista grande para cliente |
-| Identidad | Supabase Auth | Usuarios del restaurante: administrador, caja, cocina y dispositivo de pantalla |
-| Base de datos | Supabase Postgres | Datos transaccionales y reportes |
-| Tiempo real | Supabase Realtime | Actualizar segunda pantalla y cola de cocina |
-| Archivos | Supabase Storage | Comprobantes y fotografías, si hacen falta |
-| Despliegue | Vercel | Frontend, previews por pull request y producción |
-| Pruebas | Vitest, React Testing Library, Playwright | Reglas de cálculo, UI y flujo de cobro |
-| Repositorio | GitHub + Actions | Código, revisiones y CI |
+| Identidad | Neon Better Auth | Usuarios del restaurante y sesiones |
+| Base de datos | Neon Postgres | Pedidos, pagos, caja, personal e inventario |
+| Acceso a datos | Funciones de Vercel | API con permisos y operaciones de negocio; credenciales solo en servidor |
+| ORM y migraciones | Drizzle ORM + Drizzle Kit | Esquema versionado y consultas tipadas |
+| Pruebas | Vitest, React Testing Library, Playwright | Cálculos, interfaz y flujo de cobro |
+| Repositorio y CI | GitHub + Actions | Revisión de cambios y validación automática |
 
-No agregaría un servidor Express separado al principio. El navegador puede leer datos autorizados con `supabase-js` y RLS. Las operaciones que deben ser indivisibles, como cobrar y asignar el siguiente número de ficha, irán en funciones transaccionales de Postgres. Las integraciones con secretos (por ejemplo, facturación fiscal o verificación de QR) irán en Supabase Edge Functions o funciones de Vercel cuando se definan. La clave secreta de Supabase nunca se pondrá en `VITE_*`.
-
-## Modelo de datos inicial
-
-- `profiles`: usuario, nombre, rol y estado.
-- `products`, `product_prices`: menú y precios vigentes con historial.
-- `registers`, `cash_shifts`, `cash_movements`: caja, apertura, movimientos y cierre.
-- `orders`, `order_items`, `payments`, `tickets`: pedido, líneas, cobro y ficha.
-- `customer_displays`: identificador de pantalla/caja, pedido visible y estado.
-- `staff`, `shift_templates`, `staff_schedules`, `attendance`, `pay_rates`, `payroll_payments`: personal y planilla.
-- `suppliers`, `purchases`, `purchase_items`: proveedores y compras.
-- `inventory_items`, `stock_movements`, `recipes`, `recipe_items`: inventario, consumo y merma.
-- `audit_events`: modificaciones sensibles, usuario, fecha y motivo.
-
-Usar importes enteros en centavos (`bigint`) o `numeric(12,2)` en Postgres; nunca `float` para dinero. Guardar fechas de trabajo según `America/La_Paz` y marcas de tiempo en `timestamptz`. El número de ficha se asigna por turno y caja dentro de una transacción, con restricción única. Una petición repetida de cobro debe llevar una clave de idempotencia para evitar pagos o fichas duplicados.
-
-## Seguridad y roles
-
-RLS en todas las tablas expuestas. La autorización se basará en perfiles controlados por el administrador o metadatos de aplicación, no en datos editables por cada usuario. `anon` no leerá ventas, personal ni pedidos. La pantalla del cliente tendrá una sesión de dispositivo con acceso únicamente al resumen del pedido asignado; no se mostrará toda la base de pedidos. Los cambios de precios, devoluciones, cierres y ajustes se auditarán. Hacer copias de seguridad y ensayar la restauración antes de operar.
+No conectar Postgres directamente desde el navegador ni publicar `DATABASE_URL` como variable `VITE_*`. El frontend llamará a una API pequeña en Vercel; esta validará la sesión y el rol. La operación de cobrar, registrar el pago y asignar la ficha será una transacción indivisible e idempotente.
 
 ## Segunda pantalla
 
-Ruta `/cliente/:pantalla`: nombre o referencia opcional, productos, cantidades, total en Bs y estado. Durante armado muestra «Monto a cancelar». Cuando el cobro queda registrado muestra «Pagado» y número de ficha. Sin botones administrativos. Realtime actualiza la vista y una consulta inicial recupera el estado si se reconecta. La pantalla debe configurarse con identidad de dispositivo y acceso limitado.
+En São Paulo, Realtime no apareció como servicio disponible al crear el proyecto. La primera implementación consultará solo el pedido asignado a esa pantalla cada 2–3 segundos, mediante un endpoint de lectura limitado. Mostrará nombre o referencia, líneas, total a cancelar y ficha tras el cobro. No tendrá acceso a planilla, inventario ni caja. Si Neon habilita Realtime para esta región, se podrá evaluar su adopción después.
 
-## Flujo de cobro
+## Modelo de datos inicial
 
-1. Caja crea pedido en borrador.
-2. Segunda pantalla muestra el resumen y el total.
-3. Caja confirma efectivo o QR. La confirmación de QR se hace manualmente hasta integrar un proveedor de pagos.
-4. La transacción valida precios y turno abierto, registra el pago, asigna ficha y marca el pedido pagado.
-5. Cocina recibe el pedido y caja puede imprimir la ficha.
-6. Cierre de turno concilia efectivo y QR por separado.
+- `users`/tablas administradas por Better Auth y `staff_profiles`: identidad y rol.
+- `products`, `product_prices`: menú e historial de precios.
+- `registers`, `cash_shifts`, `cash_movements`: caja y arqueo.
+- `orders`, `order_items`, `payments`, `tickets`: pedido, cobro y ficha.
+- `customer_displays`: pantalla asignada y pedido visible.
+- `staff`, `shift_templates`, `staff_schedules`, `attendance`, `pay_rates`, `payroll_payments`: personal.
+- `suppliers`, `purchases`, `purchase_items`: compras.
+- `inventory_items`, `stock_movements`, `recipes`, `recipe_items`: existencias y consumo.
+- `audit_events`: usuario, fecha y motivo de modificaciones sensibles.
 
-La ficha es un comprobante interno. Facturación fiscal boliviana requiere definición e integración específicas.
+Guardar importes como enteros en centavos o `numeric(12,2)`, nunca `float`. Marcas de tiempo en `timestamptz` y fechas laborales interpretadas en `America/La_Paz`. Restricción única para el número de ficha por caja y turno. La API debe exigir clave de idempotencia al cobrar.
 
-## Entornos y entrega
+## Entornos y seguridad
 
-- `local`: Vite en el equipo de desarrollo; Supabase local o proyecto de desarrollo.
-- `preview`: despliegue automático de Vercel por pull request, con base de datos de prueba separada.
-- `production`: rama principal, proyecto Supabase de producción y dominio final.
+- Desarrollo local con base Neon de desarrollo o rama de prueba.
+- Preview de Vercel por pull request con una rama de base de datos aislada.
+- Producción con variables y permisos separados.
 
-Variables de frontend: `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY`. Mantener `.env.local` fuera de Git. Guardar migraciones SQL, semillas del menú y tipos generados en el repositorio. CI debe instalar dependencias con lockfile, ejecutar lint, tipos, pruebas y build. No se publicará el prototipo Python en Vercel como aplicación final.
+Roles: administrador, caja, cocina y pantalla de cliente. Los permisos se comprueban en la API. Respaldos y restauración probados antes de operar con dinero real. Registrar auditoría de cambios de precio, devoluciones, cierre de caja, asistencia y ajustes de inventario.
 
-## Fases de implementación
+Variables previstas: `DATABASE_URL` y la configuración de Better Auth solo en servidor; la URL pública de la aplicación en Vercel. `.env.local` queda fuera de Git. CI ejecutará lint, tipos, pruebas y build.
 
-1. Crear proyecto React/Vite, autenticación, roles, migración inicial y menú validado.
-2. Pedido, segunda pantalla, cobro transaccional, ficha, cocina y arqueo.
-3. Personal, programación, asistencia y planilla.
+## Fases
+
+1. Resolver plan/organización del proyecto Neon; crear frontend React/Vite y migración inicial.
+2. Autenticación, roles, menú, pedido, segunda pantalla, cobro transaccional, ficha, cocina y arqueo.
+3. Programación, asistencia y planilla.
 4. Proveedores, compras, inventario, recetas y reportes.
-5. Facturación e integración de pago si el cliente las necesita.
+5. Integración de pagos y facturación fiscal si el cliente las requiere.
 
-## Decisiones del cliente aún necesarias
+## Fuentes
 
-Confirmar equipos de caja y segunda pantalla, impresora, conexión a internet y funcionamiento sin red; reglas de turnos y pagos, recetas e inventario inicial; comprobación de pagos QR; y facturación fiscal. Estas decisiones no impiden crear el repositorio ni empezar la primera fase.
-
-## Fuentes consultadas
-
-- Supabase Auth con React: https://supabase.com/docs/guides/auth/quickstarts/react
-- Supabase RLS: https://supabase.com/docs/guides/database/postgres/row-level-security
-- Supabase Realtime: https://supabase.com/docs/guides/realtime/getting_started
-- Vite en Vercel: https://vercel.com/docs/frameworks/frontend/vite
+- [Neon y Vercel](https://vercel.com/marketplace/neon)
+- [Planes de Neon](https://neon.com/docs/introduction/plans)
+- [Firebase descartado como primera opción](https://firebase.google.com/docs/firestore/manage-data/transactions)
