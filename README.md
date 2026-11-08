@@ -32,6 +32,8 @@ El despliegue de Vercel usa el directorio raíz, preset **Vite**, comando `npm r
 
 `db/migrations/0003_cash_close.sql` implementa el cierre de caja. `db/migrations/0004_management.sql` agrega el rol `superadministrador`, personal, turnos, asistencias, pagos, proveedores, inventario, compras y movimientos. `GET/POST /api/admin` solo permite la gestión a administradores; el control de accesos exige `superadministrador`. Las compras de insumos aumentan existencias en una misma transacción. Los pagos de planilla se registran por separado de caja.
 
+`POST /api/order-status` permite a cocina y administración avanzar una ficha por `pendiente → preparando → listo → entregado`. La lista se actualiza periódicamente mientras la ventana está visible.
+
 La página `/?vista=operacion` es para el personal. La segunda pantalla `/?vista=cliente` se abre en otra ventana del mismo navegador y perfil, en el mismo equipo. Se sincroniza localmente mediante `BroadcastChannel` y `localStorage`; no transmite el resumen a otro dispositivo.
 
 En Producción, Vercel necesita `VITE_NEON_AUTH_URL` (URL pública) y `NEON_AUTH_BASE_URL` (misma URL para verificar JWT), además de `DATABASE_URL` (Secret). El dominio de producción debe estar en la lista de dominios confiables de Neon Auth. La función utiliza `${NEON_AUTH_BASE_URL}/.well-known/jwks.json` y consulta el rol en cada solicitud.

@@ -29,9 +29,11 @@ export function AdminPanels({ panel, isSuper }: { panel: string; isSuper: boolea
   const [editing, setEditing] = useState<Row | null>(null)
   const [version, setVersion] = useState(0)
 
+  useEffect(() => { setNotice('') }, [panel])
+
   useEffect(() => {
     let active = true
-    setLoading(true); setNotice(''); setEditing(null)
+    setLoading(true); setEditing(null)
     authorizedFetch(`/api/admin?panel=${encodeURIComponent(panel)}`)
       .then(async (response) => { if (!response.ok) throw new Error(`No se pudo cargar ${panel} (HTTP ${response.status}).`); return response.json() })
       .then((result) => { if (active) { setData(result); setLoading(false) } })
