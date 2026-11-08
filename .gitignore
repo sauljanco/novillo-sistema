@@ -1,0 +1,8 @@
+novillo.sqlite3
+novillo.sqlite3-*
+__pycache__/
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
