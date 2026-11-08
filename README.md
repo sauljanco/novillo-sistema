@@ -36,7 +36,7 @@ En Producción, Vercel necesita `VITE_NEON_AUTH_URL` (URL pública) y `NEON_AUTH
 
 Para dar acceso al primer administrador, este crea su propia cuenta y verifica el correo con el código enviado por Neon. Después se obtiene su `user_id` desde Neon Auth y se inserta explícitamente en `staff_access` con rol `administrador`. La API también comprueba `emailVerified = true`. Nunca se debe asignar el rol por correo enviado por el navegador ni convertir automáticamente al primer registro en administrador.
 
-La caja todavía no incluye cierre, otros ingresos/egresos o devoluciones. Las fichas internas no son facturas fiscales. Antes de operar con dinero real, hay que validar con el restaurante el menú y los medios de pago, completar el arqueo y probar el flujo con una cuenta autorizada.
+El cierre de caja guarda el efectivo contado y calcula la diferencia contra el fondo inicial más ventas en efectivo; las ventas QR se muestran aparte. Todavía faltan otros ingresos/egresos, devoluciones y una conciliación bancaria. Las fichas internas no son facturas fiscales. Antes de operar con dinero real, hay que validar con el restaurante el menú y los medios de pago y probar el flujo completo con una cuenta autorizada.
 
 Para probar la API localmente, configura `DATABASE_URL` en tu entorno local sin subirlo a Git. La aplicación Vite del navegador nunca recibe esta variable.
 

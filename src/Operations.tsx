@@ -26,6 +26,8 @@ function OperationsWithAuth() {
   const [orders, setOrders] = useState<Order[]>([])
   const [cart, setCart] = useState<Record<string, number>>({})
   const [opening, setOpening] = useState('0')
+  const [counted, setCounted] = useState('0')
+  const [closing, setClosing] = useState<{ expected_cash_cents: number; difference_cents: number } | null>(null)
   const [method, setMethod] = useState<'efectivo' | 'qr'>('efectivo')
   const [busy, setBusy] = useState(false)
   const [lastTicket, setLastTicket] = useState<number | null>(null)
@@ -33,19 +35,20 @@ function OperationsWithAuth() {
   const [lastPaidItems, setLastPaidItems] = useState<{ name: string; presentation: string; quantity: number; price_cents: number }[]>([])
 
   async function refresh() {
-    const [meRes, cashRes, ordersRes, menuRes] = await Promise.all([
-      authorizedFetch('/api/me'), authorizedFetch('/api/cash'), authorizedFetch('/api/orders'), fetch('/api/menu'),
-    ])
-    if (!meRes.ok) { setStaff(null); setMessage('Tu cuenta aún no tiene un rol autorizado.'); return }
+    const meRes = await authorizedFetch('/api/me')
+    if (!meRes.ok) { setStaff(null); setMessage(`No se pudo validar el acceso (HTTP ${meRes.status}).`); return }
     setStaff((await meRes.json()).staff)
-    if (cashRes.ok) setCash((await cashRes.json()).session)
-    if (ordersRes.ok) setOrders((await ordersRes.json()).orders)
-    if (menuRes.ok) setProducts((await menuRes.json()).products)
+    const [cashRes, ordersRes, menuRes] = await Promise.allSettled([
+      authorizedFetch('/api/cash'), authorizedFetch('/api/orders'), fetch('/api/menu'),
+    ])
+    if (cashRes.status === 'fulfilled' && cashRes.value.ok) setCash((await cashRes.value.json()).session)
+    if (ordersRes.status === 'fulfilled' && ordersRes.value.ok) setOrders((await ordersRes.value.json()).orders)
+    if (menuRes.status === 'fulfilled' && menuRes.value.ok) setProducts((await menuRes.value.json()).products)
   }
 
   useEffect(() => {
     if (!session.data?.user) { setStaff(null); return }
-    refresh().catch(() => setMessage('No se pudo cargar la operación.'))
+    refresh().catch((error) => setMessage(error instanceof Error ? error.message : 'No se pudo validar la sesión.'))
   }, [session.data?.user?.id])
 
   const cartItems = products.filter((p) => cart[p.id] > 0)
@@ -108,6 +111,20 @@ function OperationsWithAuth() {
     finally { setBusy(false) }
   }
 
+  async function closeCash(event: React.FormEvent) {
+    event.preventDefault()
+    if (!cash) return
+    setBusy(true); setMessage('')
+    try {
+      const cents = Math.round(Number(counted) * 100)
+      const res = await authorizedFetch('/api/cash-close', { method: 'POST', body: JSON.stringify({ session_id: Number(cash.id), counted_cash_cents: cents }) })
+      if (!res.ok) throw new Error((await res.json()).error)
+      setClosing((await res.json()).closing)
+      await refresh()
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'No se pudo cerrar la caja') }
+    finally { setBusy(false) }
+  }
+
   if (session.isPending) return <section className="work-panel"><p>Comprobando sesión…</p></section>
   if (!session.data?.user) return <section className="work-panel"><h2>Acceso del personal</h2>
     <form onSubmit={login} className="auth-form">
@@ -130,14 +147,16 @@ function OperationsWithAuth() {
     </form><button className="text-button" onClick={async () => { const result = await neonAuth!.emailOtp.sendVerificationOtp({ email: session.data!.user.email, type: 'email-verification' }); setMessage(result.error ? (result.error.message ?? 'No se pudo enviar') : 'Código enviado.') }}>Enviar código</button>{message && <p role="status">{message}</p>}
   </section>
 
-  if (!staff) return <section className="work-panel"><h2>Acceso pendiente</h2><p>{message || 'Comprobando tu autorización…'}</p><button onClick={() => neonAuth!.signOut()}>Salir</button></section>
+  if (!staff) return <section className="work-panel"><h2>Acceso pendiente</h2><p>{message || 'Comprobando tu autorización…'}</p><button onClick={() => refresh().catch((error) => setMessage(error instanceof Error ? error.message : 'No se pudo validar la sesión.'))}>Reintentar</button> <button onClick={() => neonAuth!.signOut()}>Salir</button></section>
 
   return <section className="work-panel"><div className="work-header"><div><span className="section-kicker">OPERACIÓN</span><h2>Atención y caja</h2><p>{staff.display_name} · {staff.role}</p></div><button className="text-button" onClick={() => neonAuth!.signOut()}>Salir</button></div>
     {message && <p role="status" className="notice">{message}</p>}
+    {closing && <p className="notice" role="status">Caja cerrada. Efectivo esperado {money(closing.expected_cash_cents)} · Diferencia {money(closing.difference_cents)}.</p>}
     {staff.role !== 'cocina' && (!cash ? <form onSubmit={openCash} className="cash-open"><h3>Abrir caja</h3><label>Fondo inicial en Bs<input type="number" min="0" step="0.01" value={opening} onChange={(e) => setOpening(e.target.value)} /></label><button disabled={busy}>Abrir turno</button></form>
       : <><div className="cash-summary"><span>Caja Nº {cash.id}</span><span>Fondo {money(cash.opening_cash_cents)}</span><span>Efectivo vendido {money(cash.cash_sales_cents)}</span><span>QR vendido {money(cash.qr_sales_cents)}</span></div>
         <div className="order-layout"><div><h3>Agregar productos</h3><div className="product-list">{products.map((p) => <button key={p.id} onClick={() => { setLastTicket(null); setCart({ ...cart, [p.id]: (cart[p.id] ?? 0) + 1 }) }}>{p.name} · {p.presentation}<span>{money(p.price_cents)}</span></button>)}</div></div>
           <div className="cart"><h3>Pedido actual</h3>{cartItems.length === 0 && <p>Selecciona productos.</p>}{cartItems.map((p) => <div className="cart-row" key={p.id}><span>{p.name} × {cart[p.id]}</span><button aria-label={`Quitar un ${p.name}`} onClick={() => setCart({ ...cart, [p.id]: cart[p.id] - 1 })}>−</button><strong>{money(p.price_cents * cart[p.id])}</strong></div>)}<strong className="cart-total">Total {money(total)}</strong><label>Medio de pago<select value={method} onChange={(e) => setMethod(e.target.value as 'efectivo' | 'qr')}><option value="efectivo">Efectivo</option><option value="qr">QR</option></select></label><button disabled={busy || cartItems.length === 0} onClick={charge}>Registrar cobro y emitir ficha</button><a href="/?vista=cliente" target="_blank" rel="noreferrer">Abrir segunda pantalla ↗</a></div></div></>)}
+    {staff.role !== 'cocina' && cash && <form onSubmit={closeCash} className="cash-open"><h3>Cerrar caja</h3><p>Efectivo esperado: {money(cash.opening_cash_cents + cash.cash_sales_cents)}. Ventas QR: {money(cash.qr_sales_cents)}.</p><label>Efectivo contado en Bs<input required type="number" min="0" step="0.01" value={counted} onChange={(e) => setCounted(e.target.value)} /></label><button disabled={busy}>Guardar arqueo y cerrar</button></form>}
     <h3>Fichas de hoy</h3><div className="ticket-list">{orders.map((o) => <div key={o.id}><strong>#{o.ticket_number}</strong><span>{o.items.map((i) => `${i.quantity} ${i.name}`).join(', ')}</span><span>{money(o.total_cents)} · {o.payment_method} · {o.status}</span></div>)}</div>
   </section>
 }
