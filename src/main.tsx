@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import './style.css'
+import { Operations } from './Operations'
+import { CustomerScreen } from './CustomerScreen'
 
 const modules = [
   { number: '01', title: 'Atención y pedidos', detail: 'Caja, ficha por turno y pantalla del cliente.' },
@@ -66,7 +68,7 @@ function App() {
     <main className="page">
       <header className="topbar">
         <div className="brand"><span className="brand-mark">N</span><span>NOVILLO<span className="brand-dot">.</span></span></div>
-        <span className="topbar-label">Sistema de gestión</span>
+        <a className="topbar-label" href="/?vista=operacion">Ingresar al sistema →</a>
       </header>
 
       <section className="hero" aria-labelledby="hero-title">
@@ -89,4 +91,5 @@ function App() {
   )
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>)
+const view = new URLSearchParams(location.search).get('vista')
+ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode>{view === 'cliente' ? <CustomerScreen /> : view === 'operacion' ? <main className="page"><header className="topbar"><a className="brand" href="/"><span className="brand-mark">N</span><span>NOVILLO<span className="brand-dot">.</span></span></a><span className="topbar-label">Sistema de gestión</span></header><Operations /></main> : <App />}</React.StrictMode>)
