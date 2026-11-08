@@ -7,6 +7,8 @@ Decisión: React + TypeScript + Vite para la interfaz; Neon Postgres y Better Au
 - Proyecto Neon activo para Novillo: `novillo-sistema`, ID `fancy-butterfly-13411998`, organización `Novillo Desarrollo` (plan Free), región AWS São Paulo, con Postgres y Better Auth.
 - El primer intento creó un proyecto vacío en Launch. Neon no permite transferir proyectos de Launch a Free; ese duplicado fue eliminado. El proyecto Free indicado arriba es el único destino de la aplicación.
 - [Consola del proyecto](https://console.neon.tech/app/projects/fancy-butterfly-13411998).
+- Proyecto Vercel: `novillo-sistema` en el equipo `Fast Furious Delivery` (plan Hobby), conectado a `sauljanco/novillo-sistema` en la rama `main`. Preset Vite, raíz `./`, compilación `npm run build`, salida `dist`.
+- URL de producción: [novillo-sistema.vercel.app](https://novillo-sistema.vercel.app/). El primer despliegue está listo; muestra la base web y aún no procesa operaciones.
 
 ## Piezas de la stack
 

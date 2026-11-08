@@ -2,6 +2,9 @@
 
 Sistema de gestión para el restaurante Novillo (Sacaba, Cochabamba).
 
+- [Web publicada](https://novillo-sistema.vercel.app/)
+- [Proyecto en Vercel](https://vercel.com/fast-furious-delivery/novillo-sistema)
+
 - [Alcance y reglas del negocio](ALCANCE-NOVILLO.md)
 - [Arquitectura React + Neon + Vercel](STACK.md)
 - [Menú inicial transcrito](menu-inicial.csv)
