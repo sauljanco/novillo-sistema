@@ -5,7 +5,7 @@ Decisión: React + TypeScript + Vite para la interfaz; Neon Postgres y Better Au
 ## Estado de provisión
 
 - Proyecto Neon activo para Novillo: `novillo-sistema`, ID `fancy-butterfly-13411998`, organización `Novillo Desarrollo` (plan Free), región AWS São Paulo, con Postgres y Better Auth.
-- El primer intento creó otro proyecto vacío, ID `damp-mouse-42307496`, en la organización Launch. El traslado no se completó; el proyecto Free anterior es el destino de la aplicación. El duplicado Launch debe eliminarse tras aprobación expresa para evitar consumo facturable.
+- El primer intento creó un proyecto vacío en Launch. Neon no permite transferir proyectos de Launch a Free; ese duplicado fue eliminado. El proyecto Free indicado arriba es el único destino de la aplicación.
 - [Consola del proyecto](https://console.neon.tech/app/projects/fancy-butterfly-13411998).
 
 ## Piezas de la stack
@@ -67,4 +67,5 @@ Variables previstas: `DATABASE_URL` y la configuración de Better Auth solo en s
 - [Neon y Vercel](https://vercel.com/marketplace/neon)
 - [Planes de Neon](https://neon.com/docs/introduction/plans)
 - [Firebase descartado como primera opción](https://firebase.google.com/docs/firestore/manage-data/transactions)
+
 
