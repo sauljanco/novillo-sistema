@@ -4,9 +4,9 @@ Decisión: React + TypeScript + Vite para la interfaz; Neon Postgres y Better Au
 
 ## Estado de provisión
 
-- Proyecto Neon `novillo-sistema`, ID `damp-mouse-42307496`, región AWS São Paulo, con Postgres y Better Auth.
-- Se creó inicialmente en una organización **Launch** de pago. Existe una organización **Free** llamada `Novillo Desarrollo`, pero el traslado del proyecto está pendiente de autorización específica. No conectar ni poner en uso el proyecto hasta resolver su ubicación y facturación.
-- [Consola del proyecto](https://console.neon.tech/app/projects/damp-mouse-42307496).
+- Proyecto Neon activo para Novillo: `novillo-sistema`, ID `fancy-butterfly-13411998`, organización `Novillo Desarrollo` (plan Free), región AWS São Paulo, con Postgres y Better Auth.
+- El primer intento creó otro proyecto vacío, ID `damp-mouse-42307496`, en la organización Launch. El traslado no se completó; el proyecto Free anterior es el destino de la aplicación. El duplicado Launch debe eliminarse tras aprobación expresa para evitar consumo facturable.
+- [Consola del proyecto](https://console.neon.tech/app/projects/fancy-butterfly-13411998).
 
 ## Piezas de la stack
 
@@ -56,7 +56,7 @@ Variables previstas: `DATABASE_URL` y la configuración de Better Auth solo en s
 
 ## Fases
 
-1. Resolver plan/organización del proyecto Neon; crear frontend React/Vite y migración inicial.
+1. Crear frontend React/Vite y migración inicial sobre el proyecto Neon Free.
 2. Autenticación, roles, menú, pedido, segunda pantalla, cobro transaccional, ficha, cocina y arqueo.
 3. Programación, asistencia y planilla.
 4. Proveedores, compras, inventario, recetas y reportes.
@@ -67,3 +67,4 @@ Variables previstas: `DATABASE_URL` y la configuración de Better Auth solo en s
 - [Neon y Vercel](https://vercel.com/marketplace/neon)
 - [Planes de Neon](https://neon.com/docs/introduction/plans)
 - [Firebase descartado como primera opción](https://firebase.google.com/docs/firestore/manage-data/transactions)
+
