@@ -20,6 +20,12 @@ npm run dev
 npm run build
 ```
 
-El despliegue de Vercel debe usar el directorio raíz, preset **Vite**, comando `npm run build` y salida `dist`. Las credenciales de Neon se añadirán solo a funciones del servidor cuando se implemente la API; no deben llevar prefijo `VITE_`.
+El despliegue de Vercel usa el directorio raíz, preset **Vite**, comando `npm run build` y salida `dist`. Las funciones se ejecutan en São Paulo (`gru1`), cerca del proyecto Neon. La credencial de Neon solo se usa en funciones del servidor y nunca lleva prefijo `VITE_`.
+
+## API del servidor
+
+`GET /api/health` ejecuta una consulta mínima a Neon y responde `{ "status": "ok" }` cuando la conexión funciona. Si falta `DATABASE_URL` o Neon no responde, devuelve HTTP 503 sin publicar detalles de la conexión. Vercel guarda `DATABASE_URL` como variable de tipo **Secret** solo para Producción. Las nuevas funciones y cambios de variables toman efecto en el siguiente despliegue.
+
+Para probar la API localmente, configura `DATABASE_URL` en tu entorno local sin subirlo a Git. La aplicación Vite del navegador nunca recibe esta variable.
 
 
