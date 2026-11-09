@@ -4,8 +4,10 @@ import { AdminPanels, adminTabs } from './AdminPanels'
 import { BrandLogo } from './BrandLogo'
 import './modern.css'
 import './identity.css'
+import './sales.css'
+import './sales-metrics.css'
 
-type Product = { id: string; category: string; name: string; presentation: string; price_cents: number }
+type Product = { id: string; category: string; name: string; presentation: string; price_cents: number; image_url: string | null }
 type Staff = { display_name: string; role: 'superadministrador' | 'administrador' | 'caja' | 'cocina' }
 type Cash = { id: string; opening_cash_cents: number; cash_sales_cents: number; qr_sales_cents: number }
 type Order = { id: string; ticket_number: number; total_cents: number; payment_method: string; status: string; items: { name: string; presentation: string; quantity: number }[] }
@@ -41,7 +43,7 @@ function OperationsWithAuth() {
   const [busy, setBusy] = useState(false)
   const [lastTicket, setLastTicket] = useState<number | null>(null)
   const [lastPaidTotal, setLastPaidTotal] = useState(0)
-  const [lastPaidItems, setLastPaidItems] = useState<{ name: string; presentation: string; quantity: number; price_cents: number }[]>([])
+  const [lastPaidItems, setLastPaidItems] = useState<{ name: string; presentation: string; quantity: number; price_cents: number; image_url: string | null }[]>([])
 
   async function refresh() {
     const meRes = await authorizedFetch('/api/me')
@@ -62,6 +64,7 @@ function OperationsWithAuth() {
 
   useEffect(() => {
     if (!session.data?.user || panel !== 'operacion') return
+    fetch('/api/menu').then(async (response) => { if (response.ok) setProducts((await response.json()).products) }).catch(() => {})
     const timer = window.setInterval(() => {
       if (document.visibilityState !== 'visible') return
       authorizedFetch('/api/orders').then(async (response) => {
@@ -77,7 +80,7 @@ function OperationsWithAuth() {
   const total = cartItems.reduce((sum, p) => sum + p.price_cents * cart[p.id], 0)
   useEffect(() => {
     const channel = new BroadcastChannel('novillo-pantalla-cliente')
-    const display = { items: lastTicket ? lastPaidItems : cartItems.map((p) => ({ name: p.name, presentation: p.presentation, quantity: cart[p.id], price_cents: p.price_cents })), total_cents: lastTicket ? lastPaidTotal : total, ticket_number: lastTicket, updated_at: Date.now() }
+    const display = { items: lastTicket ? lastPaidItems : cartItems.map((p) => ({ name: p.name, presentation: p.presentation, quantity: cart[p.id], price_cents: p.price_cents, image_url: p.image_url })), total_cents: lastTicket ? lastPaidTotal : total, ticket_number: lastTicket, updated_at: Date.now() }
     channel.postMessage(display)
     localStorage.setItem('novillo-pantalla-cliente', JSON.stringify(display))
     channel.close()
@@ -123,7 +126,7 @@ function OperationsWithAuth() {
       }) })
       if (!res.ok) throw new Error((await res.json()).error)
       const data = await res.json()
-      setLastPaidItems(cartItems.map((p) => ({ name: p.name, presentation: p.presentation, quantity: cart[p.id], price_cents: p.price_cents })))
+      setLastPaidItems(cartItems.map((p) => ({ name: p.name, presentation: p.presentation, quantity: cart[p.id], price_cents: p.price_cents, image_url: p.image_url })))
       setLastPaidTotal(total)
       setLastTicket(data.order.ticket_number)
       setCart({})
@@ -188,7 +191,7 @@ function OperationsWithAuth() {
   const navigation = <nav className="panel-nav" aria-label="Paneles del sistema">
     {isAdmin && <span className="nav-caption">GENERAL</span>}
     {isAdmin && <button className={panel === 'resumen' ? 'selected' : ''} onClick={() => setPanel('resumen')}><span className="nav-icon">◫</span>Resumen</button>}
-    <button className={panel === 'operacion' ? 'selected' : ''} onClick={() => setPanel('operacion')}><span className="nav-icon">▣</span>{staff.role === 'cocina' ? 'Cocina' : 'Atención y caja'}</button>
+    <button className={panel === 'operacion' ? 'selected' : ''} onClick={() => setPanel('operacion')}><span className="nav-icon">▣</span>{staff.role === 'cocina' ? 'Cocina' : 'Ventas'}</button>
     {isAdmin && <span className="nav-caption nav-caption-second">ADMINISTRACIÓN</span>}
     {isAdmin && adminTabs.filter(([key]) => key !== 'resumen' && (key !== 'accesos' || staff.role === 'superadministrador')).map(([key, label], index) =>
       <button key={key} className={panel === key ? 'selected' : ''} onClick={() => setPanel(key)}><span className="nav-icon">{['♙','▤','◈','▦','▥','♧'][index]}</span>{label}</button>)}
@@ -202,10 +205,13 @@ function OperationsWithAuth() {
   return shell(<>
     {message && <p role="status" className="notice">{message}</p>}
     {closing && <p className="notice" role="status">Caja cerrada. Efectivo esperado {money(closing.expected_cash_cents)} · Diferencia {money(closing.difference_cents)}.</p>}
-    {staff.role !== 'cocina' && cash && <><div className="cash-summary"><span>Caja Nº {cash.id}</span><span>Fondo {money(cash.opening_cash_cents)}</span><span>Efectivo vendido {money(cash.cash_sales_cents)}</span><span>QR vendido {money(cash.qr_sales_cents)}</span></div><div className="panel-toolbar operation-toolbar"><div className="panel-sections" role="tablist" aria-label="Vistas de operación"><button type="button" role="tab" aria-selected={operationView === 'venta'} className={operationView === 'venta' && !showClosing ? 'active' : ''} onClick={() => { setOperationView('venta'); setShowClosing(false) }}>Venta</button><button type="button" role="tab" aria-selected={operationView === 'fichas'} className={operationView === 'fichas' && !showClosing ? 'active' : ''} onClick={() => { setOperationView('fichas'); setShowClosing(false) }}>Fichas <span className="tab-count">{orders.length}</span></button></div><button type="button" className="secondary-utility" onClick={() => setShowClosing(true)}>Cerrar caja</button></div></>}
+    {staff.role !== 'cocina' && cash && <><div className="cash-summary sales-metrics"><span><small>CAJA ACTIVA</small><strong>Nº {cash.id}</strong></span><span><small>FONDO INICIAL</small><strong>{money(cash.opening_cash_cents)}</strong></span><span><small>VENTAS EN EFECTIVO</small><strong>{money(cash.cash_sales_cents)}</strong></span><span><small>VENTAS CON QR</small><strong>{money(cash.qr_sales_cents)}</strong></span></div><div className="panel-toolbar operation-toolbar"><div className="panel-sections" role="tablist" aria-label="Vistas de ventas"><button type="button" role="tab" aria-selected={operationView === 'venta'} className={operationView === 'venta' && !showClosing ? 'active' : ''} onClick={() => { setOperationView('venta'); setShowClosing(false) }}>Nueva venta</button><button type="button" role="tab" aria-selected={operationView === 'fichas'} className={operationView === 'fichas' && !showClosing ? 'active' : ''} onClick={() => { setOperationView('fichas'); setShowClosing(false) }}>Fichas <span className="tab-count">{orders.length}</span></button></div><button type="button" className="secondary-utility" onClick={() => setShowClosing(true)}>Cerrar caja</button></div></>}
     {staff.role !== 'cocina' && !cash && <form onSubmit={openCash} className="cash-open"><h3>Abrir caja</h3><label>Fondo inicial en Bs<input type="number" min="0" step="0.01" value={opening} onChange={(e) => setOpening(e.target.value)} /></label><button disabled={busy}>Abrir turno</button></form>}
     {staff.role !== 'cocina' && cash && showClosing && <div className="editor-stage"><button type="button" className="back-button" onClick={() => setShowClosing(false)}>← Volver a la operación</button><form onSubmit={closeCash} className="admin-form editor-form"><h3>Cerrar caja</h3><p className="form-help">Efectivo esperado: {money(cash.opening_cash_cents + cash.cash_sales_cents)} · Ventas QR: {money(cash.qr_sales_cents)}.</p><label>Efectivo contado en Bs<input required type="number" min="0" step="0.01" value={counted} onChange={(e) => setCounted(e.target.value)} /></label><div className="form-actions"><button disabled={busy}>Guardar arqueo y cerrar</button><button type="button" className="secondary" onClick={() => setShowClosing(false)}>Cancelar</button></div></form></div>}
-    {staff.role !== 'cocina' && cash && !showClosing && operationView === 'venta' && <div className="order-layout"><div className="catalog-panel"><h3>Seleccionar productos</h3><input className="product-search" type="search" placeholder="Buscar por nombre o categoría" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Buscar productos" /><div className="category-filter">{categories.map((c) => <button key={c} className={category === c ? 'selected' : ''} onClick={() => setCategory(c)}>{c}</button>)}</div><div className="product-list">{visibleProducts.map((p) => <button key={p.id} onClick={() => { setLastTicket(null); setCart({ ...cart, [p.id]: (cart[p.id] ?? 0) + 1 }) }}><span className="product-name">{p.name}<small>{p.presentation}</small></span><strong>{money(p.price_cents)}</strong></button>)}</div></div><div className="cart"><h3>Pedido actual</h3>{cartItems.length === 0 && <p>Selecciona productos.</p>}{cartItems.map((p) => <div className="cart-row" key={p.id}><span>{p.name} × {cart[p.id]}</span><button aria-label={`Quitar un ${p.name}`} onClick={() => setCart({ ...cart, [p.id]: cart[p.id] - 1 })}>−</button><strong>{money(p.price_cents * cart[p.id])}</strong></div>)}<strong className="cart-total">Total {money(total)}</strong><label>Medio de pago<select value={method} onChange={(e) => setMethod(e.target.value as 'efectivo' | 'qr')}><option value="efectivo">Efectivo</option><option value="qr">QR</option></select></label><button disabled={busy || cartItems.length === 0} onClick={charge}>Registrar cobro y emitir ficha</button><a href="/?vista=cliente" target="_blank" rel="noreferrer">Abrir segunda pantalla ↗</a></div></div>}
+    {staff.role !== 'cocina' && cash && !showClosing && operationView === 'venta' && <div className="order-layout sales-layout">
+      <div className="catalog-panel sales-catalog"><div className="sales-panel-heading"><div><span className="sales-eyebrow">CATÁLOGO</span><h3>Elige los productos</h3></div><span>{visibleProducts.length} disponibles</span></div><input className="product-search" type="search" placeholder="Buscar por nombre o categoría" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Buscar productos" /><div className="category-filter">{categories.map((c) => <button key={c} className={category === c ? 'selected' : ''} onClick={() => setCategory(c)}>{c}</button>)}</div><div className="product-list sales-product-grid">{visibleProducts.map((p) => <button type="button" key={p.id} className="sales-product-card" onClick={() => { setLastTicket(null); setCart((current) => ({ ...current, [p.id]: (current[p.id] ?? 0) + 1 })) }}><span className="sales-product-image">{p.image_url ? <img src={p.image_url} alt="" loading="lazy" /> : <span className="sales-image-mark" aria-hidden="true">✦</span>}{cart[p.id] > 0 && <span className="sales-product-count">{cart[p.id]}</span>}</span><span className="sales-product-details"><span className="sales-product-category">{p.category}</span><span className="product-name">{p.name}<small>{p.presentation}</small></span><span className="sales-product-bottom"><strong>{money(p.price_cents)}</strong><span aria-hidden="true">＋</span></span></span></button>)}{visibleProducts.length === 0 && <p className="sales-empty">No hay productos en esta búsqueda.</p>}</div></div>
+      <div className="cart sales-cart"><div className="sales-cart-heading"><div><span className="sales-eyebrow">NUEVA VENTA</span><h3>Pedido actual</h3></div><span>{cartItems.reduce((sum, p) => sum + cart[p.id], 0)} artículos</span></div>{cartItems.length === 0 && <div className="sales-cart-empty"><span aria-hidden="true">✦</span><strong>La mesa está lista</strong><p>Elige un producto para comenzar el pedido.</p></div>}{cartItems.map((p) => <div className="cart-row" key={p.id}><span>{p.name}<small>{p.presentation} · {cart[p.id]} × {money(p.price_cents)}</small></span><button aria-label={`Quitar un ${p.name}`} onClick={() => setCart((current) => ({ ...current, [p.id]: current[p.id] - 1 }))}>−</button><strong>{money(p.price_cents * cart[p.id])}</strong></div>)}<div className="sales-checkout"><div className="cart-total"><span>Total a cobrar</span><strong>{money(total)}</strong></div><label>Medio de pago<select value={method} onChange={(e) => setMethod(e.target.value as 'efectivo' | 'qr')}><option value="efectivo">Efectivo</option><option value="qr">QR</option></select></label><button disabled={busy || cartItems.length === 0} onClick={charge}>Cobrar y emitir ficha <span aria-hidden="true">↗</span></button><a href="/?vista=cliente" target="_blank" rel="noreferrer">Abrir pantalla del cliente ↗</a></div></div>
+    </div>}
     {(staff.role === 'cocina' || (operationView === 'fichas' && !showClosing)) && <section className="tickets-view"><div className="list-heading"><h3>Fichas de hoy</h3><span>{orders.length} registros</span></div><div className="ticket-list">{orders.length === 0 && <p className="empty-tickets">Todavía no hay fichas para este turno.</p>}{orders.map((o) => <div key={o.id}><strong>#{o.ticket_number}</strong><span>{o.items.map((i) => `${i.quantity} ${i.name}`).join(', ')}</span><span>{money(o.total_cents)} · {o.payment_method} · {o.status}</span>{['superadministrador','administrador','cocina'].includes(staff.role) && ['pendiente','preparando','listo'].includes(o.status) && <button disabled={busy} onClick={() => advanceOrder(o)}>{o.status === 'pendiente' ? 'Preparar' : o.status === 'preparando' ? 'Marcar listo' : 'Entregar'}</button>}</div>)}</div></section>}
-  </>, staff.role === 'cocina' ? 'Cocina y fichas' : 'Atención y caja', 'Toma pedidos, registra cobros y emite fichas para cada turno.')
+  </>, staff.role === 'cocina' ? 'Cocina y fichas' : 'Ventas', 'Crea pedidos, cobra y emite fichas en un solo lugar.')
 }

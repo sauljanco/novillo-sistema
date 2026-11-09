@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { authorizedFetch } from './auth'
 import './admin.css'
+import './menu-admin.css'
 
 type Row = Record<string, any>
 type Data = Record<string, any>
@@ -50,6 +51,26 @@ function Table({ headings, entries }: { headings: string[]; entries: (string | n
   return <div className="admin-table-wrap"><table className="admin-table"><thead><tr>{headings.map((heading) => <th key={heading}>{heading}</th>)}</tr></thead><tbody>{entries.length ? entries.map((cells, index) => <tr key={index}>{cells.map((cell, n) => <td key={n}>{cell}</td>)}</tr>) : <tr><td colSpan={headings.length} className="empty-table">Sin registros todavía.</td></tr>}</tbody></table></div>
 }
 
+function ProductImageInput({ imageUrl }: { imageUrl?: string | null }) {
+  const [preview, setPreview] = useState<string | null>(null)
+  useEffect(() => () => { if (preview) URL.revokeObjectURL(preview) }, [preview])
+  return <div className="product-photo-field"><span>Fotografía del producto</span><div className="product-photo-preview">{(preview || imageUrl) ? <img src={preview || imageUrl || ''} alt="Vista previa del producto" /> : <span aria-hidden="true">✦</span>}</div><label className="product-photo-picker">Subir fotografía<input name="image_file" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { const file = event.target.files?.[0]; setPreview(file ? URL.createObjectURL(file) : null) }} /></label><small>JPG, PNG o WebP. Se optimiza al guardar.</small></div>
+}
+
+async function compressedPhoto(file: File): Promise<string> {
+  if (file.size > 12 * 1024 * 1024) throw new Error('La foto no puede superar 12 MB.')
+  const bitmap = await createImageBitmap(file)
+  const scale = Math.min(1, 1100 / Math.max(bitmap.width, bitmap.height))
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.round(bitmap.width * scale); canvas.height = Math.round(bitmap.height * scale)
+  canvas.getContext('2d')?.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+  bitmap.close()
+  let result = canvas.toDataURL('image/webp', .78)
+  if (result.length > 960000) result = canvas.toDataURL('image/webp', .55)
+  if (result.length > 960000) throw new Error('La foto es demasiado grande. Prueba con una imagen más pequeña.')
+  return result
+}
+
 export function AdminPanels({ panel, isSuper }: { panel: string; isSuper: boolean }) {
   const [data, setData] = useState<Data>({})
   const [loading, setLoading] = useState(true)
@@ -84,7 +105,9 @@ export function AdminPanels({ panel, isSuper }: { panel: string; isSuper: boolea
     event.preventDefault()
     const form = event.currentTarget
     const body: Record<string, unknown> = { action: name }
+    const imageFile = name === 'product' ? new FormData(form).get('image_file') : null
     for (const [key, value] of new FormData(form).entries()) {
+      if (key === 'image_file') continue
       if (key.endsWith('_cents')) body[key] = Math.round(Number(value) * 100)
       else if (['id', 'invite_id', 'employee_id', 'inventory_item_id', 'supplier_id', 'quantity', 'quantity_delta', 'minimum_quantity'].includes(key)) body[key] = value === '' ? null : Number(value)
       else if (key === 'active') body[key] = value === 'true'
@@ -94,11 +117,32 @@ export function AdminPanels({ panel, isSuper }: { panel: string; isSuper: boolea
       const response = await authorizedFetch('/api/admin', { method: 'POST', body: JSON.stringify(body) })
       const result = await response.json()
       if (!response.ok) throw new Error(result.error || 'No se pudo guardar')
+      if (imageFile instanceof File && imageFile.size > 0) {
+        try {
+          const image = await compressedPhoto(imageFile)
+          const upload = await authorizedFetch('/api/product-image', { method: 'POST', body: JSON.stringify({ product_id: result.id, image }) })
+          if (!upload.ok) throw new Error((await upload.json()).error || 'No se pudo subir la fotografía')
+        } catch (error) {
+          setNotice(`Producto guardado, pero la foto no: ${error instanceof Error ? error.message : 'reintenta desde Editar'}`)
+          closeAction(); setVersion((current) => current + 1)
+          return
+        }
+      }
       setNotice('Cambios guardados correctamente.')
       if (name === 'invite') setView('invites')
       closeAction()
       setVersion((current) => current + 1)
     } catch (error) { setNotice(error instanceof Error ? error.message : 'No se pudo guardar') }
+  }
+
+  async function deleteProduct(product: Row) {
+    if (!window.confirm(`¿Eliminar ${product.name}? Dejará de aparecer en ventas y en el menú público.`)) return
+    try {
+      const response = await authorizedFetch('/api/admin', { method: 'POST', body: JSON.stringify({ action: 'delete_product', id: Number(product.id) }) })
+      if (!response.ok) throw new Error((await response.json()).error || 'No se pudo eliminar')
+      setNotice('Producto eliminado del menú y de ventas.')
+      closeAction(); setVersion((current) => current + 1)
+    } catch (error) { setNotice(error instanceof Error ? error.message : 'No se pudo eliminar') }
   }
 
   if (loading) return <div className="panel-loading" role="status">Cargando {panel}…</div>
@@ -149,8 +193,8 @@ export function AdminPanels({ panel, isSuper }: { panel: string; isSuper: boolea
         {action === 'stock' && <form onSubmit={(event) => save(event, 'stock')} className="admin-form editor-form"><h3>Registrar movimiento</h3><label>Artículo<SelectRows name="inventory_item_id" list={items} /></label><label>Variación<input name="quantity_delta" type="number" step="0.001" required placeholder="+5 o -2" /></label><label>Motivo<select name="reason"><option value="ajuste">Ajuste</option><option value="consumo">Consumo</option><option value="merma">Merma</option></select></label><label>Detalle<input name="note" /></label><div className="form-actions"><button>Guardar movimiento</button><button type="button" className="secondary" onClick={closeAction}>Cancelar</button></div></form>}
         {action === 'supplier' && <form key={`supplier-${editing?.id || 'new'}`} onSubmit={(event) => save(event, 'supplier')} className="admin-form editor-form"><h3>{editing ? 'Editar proveedor' : 'Agregar proveedor'}</h3>{editing && <input type="hidden" name="id" value={editing.id} />}<label>Nombre<input name="name" required defaultValue={editing?.name || ''} /></label><label>Contacto<input name="contact" defaultValue={editing?.contact || ''} /></label><label>Nota<input name="note" defaultValue={editing?.note || ''} /></label>{editing && <label>Estado<select name="active" defaultValue={String(editing.active)}><option value="true">Activo</option><option value="false">Inactivo</option></select></label>}<div className="form-actions"><button>Guardar proveedor</button><button type="button" className="secondary" onClick={closeAction}>Cancelar</button></div></form>}
         {action === 'purchase' && <form onSubmit={(event) => save(event, 'purchase')} className="admin-form editor-form"><h3>Registrar compra o inversión</h3><label>Proveedor<SelectRows name="supplier_id" list={suppliers} optional label="Sin proveedor" /></label><label>Tipo<select name="category"><option value="insumo">Insumo</option><option value="inversion">Inversión / equipo</option><option value="gasto">Gasto</option></select></label><label>Artículo (para insumo)<SelectRows name="inventory_item_id" list={items} optional label="Seleccionar si es insumo" /></label><label>Cantidad (para insumo)<input name="quantity" type="number" step="0.001" min="0" /></label><label>Descripción<input name="description" required /></label><label>Importe (Bs)<input name="amount_cents" type="number" step="0.01" min="0.01" required /></label><label>Pago<select name="payment_status"><option value="pagado">Pagado</option><option value="pendiente">Pendiente</option></select></label><div className="form-actions"><button>Guardar compra</button><button type="button" className="secondary" onClick={closeAction}>Cancelar</button></div></form>}
-        {action === 'product' && <form key={`product-${editing?.id || 'new'}`} onSubmit={(event) => save(event, 'product')} className="admin-form editor-form"><h3>{editing ? 'Editar producto' : 'Agregar producto'}</h3>{editing && <input type="hidden" name="id" value={editing.id} />}<label>Categoría<input name="category" required defaultValue={editing?.category || ''} /></label><label>Nombre<input name="name" required defaultValue={editing?.name || ''} /></label><label>Presentación<input name="presentation" required defaultValue={editing?.presentation || ''} /></label><label>Precio (Bs)<input name="price_cents" type="number" step="0.01" min="0" required defaultValue={editing ? Number(editing.price_cents) / 100 : ''} /></label>{editing && <label>Estado<select name="active" defaultValue={String(editing.active)}><option value="true">Activo</option><option value="false">Inactivo</option></select></label>}<div className="form-actions"><button>Guardar producto</button><button type="button" className="secondary" onClick={closeAction}>Cancelar</button></div></form>}
-        {action === 'invite' && <form onSubmit={(event) => save(event, 'invite')} className="admin-form editor-form"><h3>Agregar usuario</h3><p className="form-help">La persona creará su contraseña y verificará su correo antes de ingresar.</p><label>Nombre completo<input name="display_name" required maxLength={120} /></label><label>Correo electrónico<input name="email" type="email" required maxLength={254} /></label><label>Rol<select name="role"><option value="administrador">Administrador · todos los paneles</option><option value="caja">Caja y ventas · solo atención y caja</option></select></label><div className="form-actions"><button>Crear invitación</button><button type="button" className="secondary" onClick={closeAction}>Cancelar</button></div><p className="form-help">La invitación dura 7 días. Comparte el <a href="/?vista=operacion&registro=1" target="_blank" rel="noreferrer">enlace de registro</a> con la persona.</p></form>}
+        {action === 'product' && <form key={`product-${editing?.id || 'new'}`} onSubmit={(event) => save(event, 'product')} className="admin-form editor-form product-editor"><h3>{editing ? 'Editar producto' : 'Agregar producto'}</h3>{editing && <input type="hidden" name="id" value={editing.id} />}<ProductImageInput key={editing?.id || 'new'} imageUrl={editing?.image_url} /><label>Categoría<input name="category" required defaultValue={editing?.category || ''} /></label><label>Nombre<input name="name" required defaultValue={editing?.name || ''} /></label><label>Presentación<input name="presentation" required defaultValue={editing?.presentation || ''} /></label><label>Precio (Bs)<input name="price_cents" type="number" step="0.01" min="0" required defaultValue={editing ? Number(editing.price_cents) / 100 : ''} /></label>{editing && <label>Estado<select name="active" defaultValue={String(editing.active)}><option value="true">Activo</option><option value="false">Inactivo</option></select></label>}<div className="form-actions"><button>Guardar producto</button><button type="button" className="secondary" onClick={closeAction}>Cancelar</button>{editing && <button type="button" className="delete-product" onClick={() => deleteProduct(editing)}>Eliminar producto</button>}</div></form>}
+        {action === 'invite' && <form onSubmit={(event) => save(event, 'invite')} className="admin-form editor-form"><h3>Agregar usuario</h3><p className="form-help">La persona creará su contraseña y verificará su correo antes de ingresar.</p><label>Nombre completo<input name="display_name" required maxLength={120} /></label><label>Correo electrónico<input name="email" type="email" required maxLength={254} /></label><label>Rol<select name="role"><option value="administrador">Administrador · todos los paneles</option><option value="caja">Caja y ventas · solo panel Ventas</option></select></label><div className="form-actions"><button>Crear invitación</button><button type="button" className="secondary" onClick={closeAction}>Cancelar</button></div><p className="form-help">La invitación dura 7 días. Comparte el <a href="/?vista=operacion&registro=1" target="_blank" rel="noreferrer">enlace de registro</a> con la persona.</p></form>}
         {action === 'access' && editing && <form onSubmit={(event) => save(event, 'access')} className="admin-form editor-form"><h3>Gestionar acceso</h3><p className="form-help">{editing.name} · {editing.email}</p><input type="hidden" name="user_id" value={editing.id} /><label>Rol<select name="role" defaultValue={editing.role || 'caja'}><option value="administrador">Administrador</option><option value="caja">Caja y ventas</option><option value="cocina">Cocina</option></select></label><label>Estado<select name="active" defaultValue={String(editing.active !== false)}><option value="true">Activo</option><option value="false">Suspendido</option></select></label><div className="form-actions"><button disabled={!editing.emailVerified}>Guardar acceso</button><button type="button" className="secondary" onClick={closeAction}>Cancelar</button></div></form>}
       </section> : <div className="records-stage">
         {panel === 'personal' && activeView === 'employees' && <Table headings={['Nombre', 'Cargo', 'Día', 'Medio turno', 'Devengado', 'Pagado', 'Saldo', 'Estado', '']} entries={filtered(employees).map((e) => [e.full_name, e.job_title, money(e.daily_rate_cents), money(e.half_day_rate_cents), money(e.earned_cents), money(e.paid_cents), money(Number(e.earned_cents) - Number(e.paid_cents)), e.active ? 'Activo' : 'Inactivo', <button className="table-action" onClick={() => openAction('employee', e)}>Editar</button>])} />}
@@ -161,7 +205,7 @@ export function AdminPanels({ panel, isSuper }: { panel: string; isSuper: boolea
         {panel === 'inventario' && activeView === 'movements' && <Table headings={['Fecha', 'Artículo', 'Variación', 'Motivo', 'Detalle']} entries={filtered(rows(data, 'movements')).map((m) => [dateTime(m.created_at), m.name, `${m.quantity_delta} ${m.unit}`, m.reason, m.note])} />}
         {panel === 'compras' && activeView === 'purchases' && <Table headings={['Fecha', 'Tipo', 'Proveedor', 'Descripción', 'Cantidad', 'Importe', 'Pago']} entries={filtered(rows(data, 'purchases')).map((p) => [dateTime(p.purchased_at), p.category, p.supplier_name || '—', p.description, p.item_name ? `${p.quantity} · ${p.item_name}` : '—', money(p.amount_cents), p.payment_status])} />}
         {panel === 'compras' && activeView === 'suppliers' && <Table headings={['Nombre', 'Contacto', 'Nota', 'Estado', '']} entries={filtered(suppliers).map((s) => [s.name, s.contact, s.note, s.active ? 'Activo' : 'Inactivo', <button className="table-action" onClick={() => openAction('supplier', s)}>Editar</button>])} />}
-        {panel === 'catalogo' && <Table headings={['Categoría', 'Producto', 'Presentación', 'Precio', 'Estado', '']} entries={filtered(rows(data, 'products')).map((p) => [p.category, p.name, p.presentation, money(p.price_cents), p.active ? 'Activo' : 'Inactivo', <button className="table-action" onClick={() => openAction('product', p)}>Editar</button>])} />}
+        {panel === 'catalogo' && <div className="menu-admin-grid">{filtered(rows(data, 'products')).map((p) => <article className="menu-admin-card" key={p.id}><div className="menu-admin-image">{p.image_url ? <img src={p.image_url} alt="" loading="lazy" /> : <span aria-hidden="true">✦</span>}</div><div className="menu-admin-info"><span>{p.category} · {p.active ? 'Activo' : 'Inactivo'}</span><h3>{p.name}</h3><p>{p.presentation}</p><div><strong>{money(p.price_cents)}</strong><button className="table-action" onClick={() => openAction('product', p)}>Editar</button></div></div></article>)}{filtered(rows(data, 'products')).length === 0 && <p className="menu-admin-empty">No hay productos para mostrar.</p>}</div>}
         {panel === 'reportes' && <><div className="metric-grid secondary-metrics"><div><small>Jornadas devengadas</small><strong>{money(data.payroll?.earned_cents)}</strong></div>{rows(data, 'purchases').map((p) => <div key={`${p.category}-${p.payment_status}`}><small>{p.category} · {p.payment_status}</small><strong>{money(p.amount_cents)}</strong></div>)}</div>{activeView === 'daily' && <Table headings={['Fecha', 'Fichas', 'Total', 'Efectivo', 'QR']} entries={rows(data, 'daily').map((d) => [date(d.service_date), d.tickets, money(d.sales_cents), money(d.cash_cents), money(d.qr_cents)])} />}{activeView === 'status' && <Table headings={['Estado', 'Cantidad']} entries={rows(data, 'status').map((s) => [s.status, s.count])} />}{activeView === 'cash' && <Table headings={['Caja', 'Apertura', 'Cierre', 'Fondo', 'Efectivo', 'QR', 'Contado', 'Diferencia']} entries={rows(data, 'cash').map((s) => [s.id, dateTime(s.opened_at), dateTime(s.closed_at), money(s.opening_cash_cents), money(s.cash_sales_cents), money(s.qr_sales_cents), s.closed_at ? money(s.counted_cash_cents) : 'Abierta', s.closed_at ? money(Number(s.counted_cash_cents) - Number(s.opening_cash_cents) - Number(s.cash_sales_cents)) : '—'])} />}</>}
         {panel === 'accesos' && isSuper && activeView === 'users' && <Table headings={['Cuenta', 'Correo', 'Verificado', 'Rol', 'Estado', '']} entries={filtered(rows(data, 'users')).map((u) => [u.name, u.email, u.emailVerified ? 'Sí' : 'No', u.role === 'caja' ? 'Caja y ventas' : u.role || 'Sin acceso', u.active === true ? 'Activo' : '—', u.role === 'superadministrador' ? 'Protegido' : <button className="table-action" onClick={() => openAction('access', u)}>Gestionar</button>])} />}
         {panel === 'accesos' && isSuper && activeView === 'invites' && <Table headings={['Nombre', 'Correo', 'Rol', 'Estado', 'Vence', 'Acción']} entries={filtered(rows(data, 'invites')).map((invite) => [invite.display_name, invite.email, invite.role === 'caja' ? 'Caja y ventas' : 'Administrador', invite.status === 'pendiente' && new Date(invite.expires_at) < new Date() ? 'Vencida' : invite.status, dateTime(invite.expires_at), invite.status === 'pendiente' ? <form onSubmit={(event) => save(event, 'revoke_invite')}><input type="hidden" name="invite_id" value={invite.id} /><button className="table-action">Revocar</button></form> : '—'])} />}

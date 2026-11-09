@@ -9,9 +9,10 @@ export async function GET(): Promise<Response> {
   try {
     const sql = neon(connectionString)
     const products = await sql`
-      SELECT id, category, name, presentation, price_cents
+      SELECT id, category, name, presentation, price_cents,
+        CASE WHEN image_data IS NOT NULL THEN '/api/product-image?id=' || id::text || '&v=' || extract(epoch from updated_at)::bigint::text ELSE NULL END AS image_url
       FROM public.products
-      WHERE active = true
+      WHERE active = true AND deleted_at IS NULL
       ORDER BY category, name, presentation
     `
     return Response.json({ products }, { headers: { 'Cache-Control': 'no-store' } })

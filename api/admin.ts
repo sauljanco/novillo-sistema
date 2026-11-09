@@ -69,7 +69,9 @@ export async function GET(request: Request): Promise<Response> {
         ])
         return reply({ suppliers, purchases, items })
       }
-      case 'catalogo': return reply({ products: await sql`SELECT * FROM public.products ORDER BY active DESC,category,name,presentation` })
+      case 'catalogo': return reply({ products: await sql`SELECT id,category,name,presentation,price_cents,active,created_at,updated_at,
+        CASE WHEN image_data IS NOT NULL THEN '/api/product-image?id=' || id::text || '&v=' || extract(epoch from updated_at)::bigint::text ELSE NULL END AS image_url
+        FROM public.products WHERE deleted_at IS NULL ORDER BY active DESC,category,name,presentation` })
       case 'accesos': {
         if (access.staff.role !== 'superadministrador') return noAccess()
         const [users, invites] = await Promise.all([
@@ -185,9 +187,17 @@ export async function POST(request: Request): Promise<Response> {
         const category = text(body.category, 80), name = text(body.name), presentation = text(body.presentation, 80), price = cents(body.price_cents)
         if (!category || !name || !presentation || price < 0) return bad('Producto inválido')
         const rows = id(body.id)
-          ? await sql`UPDATE public.products SET category=${category},name=${name},presentation=${presentation},price_cents=${price},active=${body.active !== false},updated_at=now() WHERE id=${id(body.id)} RETURNING id`
+          ? await sql`UPDATE public.products SET category=${category},name=${name},presentation=${presentation},price_cents=${price},active=${body.active !== false},updated_at=now() WHERE id=${id(body.id)} AND deleted_at IS NULL RETURNING id`
           : await sql`INSERT INTO public.products(category,name,presentation,price_cents) VALUES(${category},${name},${presentation},${price}) RETURNING id`
         return reply({ id: rows[0]?.id }, 201)
+      }
+      case 'delete_product': {
+        const productId = id(body.id)
+        if (!productId) return bad('Producto inválido')
+        const rows = await sql`UPDATE public.products SET active=false,deleted_at=now(),updated_at=now()
+          WHERE id=${productId} AND deleted_at IS NULL RETURNING id`
+        if (!rows.length) return reply({ error: 'Producto inexistente' }, 404)
+        return reply({ id: rows[0].id })
       }
       case 'access': {
         if (access.staff.role !== 'superadministrador') return noAccess()

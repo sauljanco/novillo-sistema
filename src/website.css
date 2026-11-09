@@ -60,6 +60,7 @@
 .site-menu-categories button.active { background:var(--site-red); border-color:var(--site-red); color:#fff; }
 .site-menu-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
 .site-menu-item { display:flex; justify-content:space-between; align-items:center; gap:15px; min-height:94px; padding:19px 22px; background:#27211d; border:1px solid #473a31; border-radius:11px; }
+.site-menu-thumb { width:55px;height:55px;flex:none;display:grid;place-items:center;overflow:hidden;border-radius:8px;background:linear-gradient(145deg,#8f3d24,#39251c);color:#f1b369;font-size:24px; }.site-menu-thumb img { width:100%;height:100%;object-fit:cover; }.site-menu-item>div:nth-child(2) { flex:1;min-width:0; }
 .site-menu-item h3 { margin:0 0 6px; color:#fffaf4; font-size:14px; font-weight:800; }
 .site-menu-item p { margin:0; color:#ae9a8a; font-size:11px; }
 .site-menu-item strong { color:#ffad56; font-size:13px; white-space:nowrap; }
