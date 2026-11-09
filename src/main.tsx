@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import './style.css'
 import { Operations } from './Operations'
 import { CustomerScreen } from './CustomerScreen'
+import { BrandLogo } from './BrandLogo'
 
 const modules = [
   { number: '01', title: 'Atención y pedidos', detail: 'Caja, ficha por turno y pantalla del cliente.' },
@@ -67,7 +68,7 @@ function App() {
   return (
     <main className="page">
       <header className="topbar">
-        <div className="brand"><span className="brand-mark">N</span><span>NOVILLO<span className="brand-dot">.</span></span></div>
+        <div className="brand"><BrandLogo /><span>NOVILLO</span></div>
         <a className="topbar-label" href="/?vista=operacion">Ingresar al sistema →</a>
       </header>
 
@@ -76,9 +77,9 @@ function App() {
           <div className="eyebrow"><span className="eyebrow-line" /> RESTAURANTE NOVILLO · SACABA</div>
           <h1 id="hero-title">La operación del restaurante, <em>en un solo lugar.</em></h1>
           <p>Atiende pedidos, cobra, organiza al equipo y controla el inventario y las compras desde un mismo sistema.</p>
-          <div className="status"><span className="status-dot" /> Sistema en implementación</div>
+          <div className="status"><span className="status-dot" /> Sistema activo</div>
         </div>
-        <div className="hero-art" aria-hidden="true"><span className="art-circle" /><span className="art-letter">N</span><span className="art-caption">ESPECIALIDAD EN CARNES A LA PARRILLA</span></div>
+        <div className="hero-art" aria-hidden="true"><BrandLogo className="hero-logo" /><span className="art-caption">ESPECIALIDAD EN CARNES A LA PARRILLA</span></div>
       </section>
 
       <section className="modules" aria-labelledby="modules-title">
