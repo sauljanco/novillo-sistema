@@ -1,0 +1,132 @@
+.site { --site-ink:#1b1714; --site-red:#c93523; --site-amber:#eda22b; --site-paper:#f7f5f1; --site-line:#e7e0d8; min-height:100vh; background:var(--site-paper); color:var(--site-ink); font-family:Manrope,system-ui,sans-serif; }
+.site * { box-sizing:border-box; }
+.site a { color:inherit; }
+.site section[id] { scroll-margin-top:82px; }
+.site-container { width:min(100% - 64px, 1240px); margin-inline:auto; }
+.site-header { position:sticky; top:0; z-index:20; background:#f7f5f1f2; backdrop-filter:blur(18px); border-bottom:1px solid var(--site-line); }
+.site-header-inner { min-height:82px; display:flex; align-items:center; gap:32px; }
+.site-brand { display:flex; align-items:center; flex:none; gap:10px; text-decoration:none; font-size:17px; font-weight:800; letter-spacing:.075em; line-height:1.1; }
+.site-brand:hover,.site-footer-brand:hover { text-decoration:none; }
+.site-brand .novillo-logo { width:52px; height:52px; background:var(--site-ink); padding:3px; border-radius:9px; }
+.site-brand small { display:block; margin-top:5px; font-size:9px; font-weight:700; color:#806f62; letter-spacing:.09em; text-transform:uppercase; }
+.site-nav { display:flex; align-items:center; justify-content:center; gap:30px; flex:1; }
+.site-nav a { text-decoration:none; color:#5b514a; font-size:12px; font-weight:700; transition:color .2s; }
+.site-nav a:hover,.site-footer a:hover { color:var(--site-red); text-decoration:none; }
+.site-header-actions { display:flex; align-items:center; gap:10px; margin-left:auto; }
+.site-access { display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:42px; padding:10px 16px; background:var(--site-ink); color:white!important; border-radius:8px; text-decoration:none; font-size:11px; font-weight:800; white-space:nowrap; transition:background .2s,transform .2s; }
+.site-access:hover { background:var(--site-red); text-decoration:none; transform:translateY(-1px); }
+.site-menu-toggle { display:none; width:42px; height:42px; align-items:center; justify-content:center; flex-direction:column; gap:5px; border:1px solid #d7cfc4; background:transparent; border-radius:8px; cursor:pointer; }
+.site-menu-toggle span { display:block; width:17px; height:2px; border-radius:2px; background:var(--site-ink); }
+.site-hero { padding:78px 0 88px; }
+.site-hero-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,.92fr); align-items:center; gap:7%; }
+.site-eyebrow,.site-section-label { display:inline-flex; align-items:center; gap:12px; color:var(--site-red); font-size:10px; font-weight:800; letter-spacing:.2em; }
+.site-eyebrow i { display:block; width:28px; height:1px; background:var(--site-red); }
+.site-hero-copy h1 { max-width:690px; margin:25px 0 24px; font-family:'DM Serif Display',Georgia,serif; font-size:clamp(58px,5.3vw,88px); line-height:1.02; font-weight:400; letter-spacing:-.047em; }
+.site-hero-copy h1 em,.site-intro h2 em,.site-visit h2 em { color:var(--site-red); font-weight:400; }
+.site-hero-copy > p { max-width:530px; color:#675e56; font-size:16px; line-height:1.75; }
+.site-hero-actions { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin:31px 0 43px; }
+.site-button,.site-button-outline { display:inline-flex; align-items:center; justify-content:center; gap:25px; min-height:48px; padding:12px 18px; border-radius:8px; text-decoration:none; font-size:12px; font-weight:800; transition:transform .2s,background .2s; }
+.site-button { background:var(--site-red); color:#fff!important; }
+.site-button:hover { background:#a92b1d; text-decoration:none; transform:translateY(-2px); }
+.site-button-outline { border:1px solid #cec4b9; color:var(--site-ink); }
+.site-button-outline:hover { background:#fff; text-decoration:none; transform:translateY(-2px); }
+.site-hero-note { display:flex; align-items:center; gap:12px; color:#806f62; font-size:11px; font-weight:700; letter-spacing:.02em; }
+.site-note-line { width:24px; height:1px; background:var(--site-amber); }
+.site-hero-visual { min-height:540px; position:relative; display:grid; place-items:center; overflow:hidden; isolation:isolate; background:radial-gradient(circle at 56% 45%,#543020,#211814 58%,#120e0c); border-radius:24px; }
+.site-hero-glow { position:absolute; z-index:-1; width:85%; aspect-ratio:1; background:radial-gradient(circle,#c84d1f77,transparent 68%); filter:blur(20px); }
+.site-hero-logo { width:min(76%,420px); height:auto; filter:drop-shadow(0 22px 28px #0008); }
+.site-hero-visual-footer { position:absolute; bottom:22px; inset-inline:28px; display:flex; justify-content:space-between; color:#f6d2ae; font-size:9px; font-weight:800; letter-spacing:.18em; }
+.site-intro { padding:90px 0 86px; border-top:1px solid var(--site-line); }
+.site-intro-grid { display:grid; grid-template-columns:1fr .8fr; gap:12%; align-items:start; }
+.site-intro h2,.site-visit h2 { margin:19px 0 0; font-family:'DM Serif Display',Georgia,serif; font-size:clamp(47px,4.6vw,70px); line-height:1.08; font-weight:400; letter-spacing:-.035em; }
+.site-intro-copy { padding-top:34px; }
+.site-intro-copy p { color:#625951; font-size:14px; line-height:1.9; }
+.site-intro-copy a { display:inline-flex; gap:22px; align-items:center; margin-top:12px; padding-bottom:7px; border-bottom:1px solid var(--site-red); color:var(--site-red); font-size:12px; font-weight:800; text-decoration:none; }
+.site-features { padding:0 0 105px; }
+.site-features-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.site-features article { min-height:216px; padding:27px; background:#fffefd; border:1px solid var(--site-line); border-radius:14px; }
+.site-features article > span { color:var(--site-red); font-size:11px; font-weight:800; letter-spacing:.12em; }
+.site-features h3 { margin:36px 0 8px; font-size:17px; font-weight:800; }
+.site-features p { margin:0; color:#72675e; font-size:12px; line-height:1.7; }
+.site-menu-section { padding:97px 0 103px; background:#1b1714; color:#fffaf4; }
+.site-section-heading { display:flex; justify-content:space-between; align-items:flex-end; gap:25px; }
+.site-menu-section .site-section-label { color:#f2ae63; }
+.site-section-heading h2 { margin:16px 0 9px; font-family:'DM Serif Display',Georgia,serif; font-size:clamp(52px,5vw,76px); line-height:1.05; font-weight:400; }
+.site-section-heading p { margin:0; color:#c7b6a8; font-size:13px; }
+.site-menu-number { color:#9c8577; font-size:11px; font-weight:800; letter-spacing:.15em; }
+.site-menu-categories { display:flex; gap:7px; overflow-x:auto; padding:38px 0 26px; scrollbar-width:thin; }
+.site-menu-categories button { flex:none; min-height:38px; padding:8px 16px; border:1px solid #55463d; border-radius:25px; background:transparent; color:#cdbbad; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap; }
+.site-menu-categories button:hover { border-color:#d5814e; color:#fff; }
+.site-menu-categories button.active { background:var(--site-red); border-color:var(--site-red); color:#fff; }
+.site-menu-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.site-menu-item { display:flex; justify-content:space-between; align-items:center; gap:15px; min-height:94px; padding:19px 22px; background:#27211d; border:1px solid #473a31; border-radius:11px; }
+.site-menu-item h3 { margin:0 0 6px; color:#fffaf4; font-size:14px; font-weight:800; }
+.site-menu-item p { margin:0; color:#ae9a8a; font-size:11px; }
+.site-menu-item strong { color:#ffad56; font-size:13px; white-space:nowrap; }
+.site-menu-message { padding:35px 0; color:#cfbeb0; }
+.site-menu-footnote { margin:27px 0 0; color:#b39f91; font-size:11px; line-height:1.6; }
+.site-visit { padding:100px 0; }
+.site-visit-grid { display:grid; grid-template-columns:1fr .85fr; align-items:center; gap:12%; }
+.site-visit p { margin:28px 0; color:#675e56; font-size:14px; line-height:1.9; }
+.site-visit-art { min-height:345px; display:flex; flex-direction:column; justify-content:space-between; position:relative; overflow:hidden; padding:36px; border-radius:18px; background:linear-gradient(145deg,#e74527,#b92619 51%,#ef9522); color:#fff7ee; }
+.site-visit-art:after { content:''; position:absolute; width:310px; height:310px; right:-65px; top:-80px; border:1px solid #ffffff69; border-radius:50%; box-shadow:0 0 0 40px #ffffff11,0 0 0 80px #ffffff0a; }
+.site-visit-art span { font-size:11px; font-weight:800; letter-spacing:.2em; }
+.site-visit-art strong { position:relative; z-index:1; font-family:'DM Serif Display',Georgia,serif; font-size:clamp(37px,3vw,51px); line-height:1.1; font-weight:400; }
+.site-visit-art i { width:50px; height:2px; background:#fff4e6; }
+.site-footer { padding:47px 0 28px; background:#151310; color:#fff; }
+.site-footer-inner { display:grid; grid-template-columns:1fr auto; gap:42px 30px; align-items:center; }
+.site-footer-brand { display:flex; align-items:center; gap:11px; font-size:18px; font-weight:800; letter-spacing:.09em; }
+.site-footer-brand .novillo-logo { width:60px; height:60px; }
+.site-footer-brand small { display:block; margin-top:5px; color:#aa998d; font-size:9px; font-weight:600; letter-spacing:.03em; }
+.site-footer nav { display:flex; gap:24px; flex-wrap:wrap; }
+.site-footer nav a { color:#d2c4b8; font-size:11px; text-decoration:none; }
+.site-footer-inner > small { grid-column:1 / -1; padding-top:19px; border-top:1px solid #3a302a; color:#9d8d80; font-size:10px; }
+.site :focus-visible { outline:2px solid #f2a51f; outline-offset:3px; }
+@media(max-width:1000px) { .site-header-inner { gap:18px; } .site-nav { gap:17px; } .site-hero-grid { gap:4%; } .site-hero-visual { min-height:460px; } }
+@media(max-width:760px) {
+  .site-container { width:min(100% - 36px, 620px); }
+  .site-header-inner { min-height:70px; gap:10px; }
+  .site-brand { font-size:13px; gap:6px; }
+  .site-brand .novillo-logo { width:43px; height:43px; }
+  .site-brand small { font-size:7px; }
+  .site-access-long { display:none; }
+  .site-access { min-height:41px; padding:9px 11px; font-size:10px; gap:5px; }
+  .site-menu-toggle { display:flex; flex:none; }
+  .site-nav { display:none; position:absolute; top:100%; left:0; right:0; padding:13px 18px 18px; background:#f7f5f1; border-bottom:1px solid var(--site-line); box-shadow:0 14px 18px #21160f12; }
+  .site-nav.site-nav-open { display:grid; gap:0; }
+  .site-nav a { display:block; min-height:44px; padding:12px 4px; border-bottom:1px solid var(--site-line); font-size:13px; }
+  .site-hero { padding:45px 0 60px; }
+  .site-hero-grid,.site-intro-grid,.site-visit-grid { grid-template-columns:1fr; gap:38px; }
+  .site-hero-copy h1 { font-size:clamp(48px,10vw,68px); margin:21px 0 18px; }
+  .site-hero-copy > p { font-size:14px; line-height:1.7; }
+  .site-hero-actions { margin:24px 0 29px; }
+  .site-hero-visual { min-height:410px; }
+  .site-intro { padding:67px 0; }
+  .site-intro-copy { padding:0; }
+  .site-features { padding-bottom:70px; }
+  .site-features-grid { grid-template-columns:1fr; }
+  .site-features article { min-height:0; padding:22px; }
+  .site-features h3 { margin:17px 0 7px; }
+  .site-menu-section { padding:70px 0 78px; }
+  .site-menu-list { grid-template-columns:1fr; }
+  .site-menu-number { display:none; }
+  .site-menu-categories { padding-top:27px; }
+  .site-visit { padding:70px 0; }
+  .site-visit-art { min-height:300px; }
+  .site-footer-inner { grid-template-columns:1fr; gap:26px; }
+  .site-footer nav { gap:15px 21px; }
+}
+@media(max-width:420px) {
+  .site-container { width:calc(100% - 28px); }
+  .site-header-inner { gap:6px; }
+  .site-brand { font-size:12px; }
+  .site-brand .novillo-logo { width:38px; height:38px; }
+  .site-brand small { display:none; }
+  .site-access { padding:9px; }
+  .site-menu-toggle { width:39px; height:41px; }
+  .site-hero-copy h1 { font-size:clamp(44px,11.5vw,52px); }
+  .site-hero-visual { min-height:330px; }
+  .site-hero-visual-footer { inset-inline:17px; font-size:8px; }
+  .site-button,.site-button-outline { gap:10px; padding:11px 13px; font-size:11px; }
+  .site-intro h2,.site-visit h2 { font-size:46px; }
+}
