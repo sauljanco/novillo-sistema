@@ -32,6 +32,8 @@ El despliegue de Vercel usa el directorio raíz, preset **Vite**, comando `npm r
 
 `db/migrations/0003_cash_close.sql` implementa el cierre de caja. `db/migrations/0004_management.sql` agrega el rol `superadministrador`, personal, turnos, asistencias, pagos, proveedores, inventario, compras y movimientos. `GET/POST /api/admin` solo permite la gestión a administradores; el control de accesos exige `superadministrador`. Las compras de insumos aumentan existencias en una misma transacción. Los pagos de planilla se registran por separado de caja.
 
+`db/migrations/0005_staff_invites.sql` agrega invitaciones para usuarios nuevos. El superadministrador escribe nombre, correo y rol (`administrador` o `caja`); comparte el enlace de registro. Cada persona crea su contraseña en Neon Auth y verifica el correo. En la primera petición autorizada, la base acepta solo la invitación vigente cuyo correo coincide con el correo verificado. No se envía una invitación por correo automáticamente. Un administrador accede a los módulos de negocio; `caja` solo accede a atención y caja. El panel de accesos queda reservado al superadministrador.
+
 `POST /api/order-status` permite a cocina y administración avanzar una ficha por `pendiente → preparando → listo → entregado`. La lista se actualiza periódicamente mientras la ventana está visible.
 
 La página `/?vista=operacion` es para el personal. La segunda pantalla `/?vista=cliente` se abre en otra ventana del mismo navegador y perfil, en el mismo equipo. Se sincroniza localmente mediante `BroadcastChannel` y `localStorage`; no transmite el resumen a otro dispositivo.

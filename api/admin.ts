@@ -72,9 +72,13 @@ export async function GET(request: Request): Promise<Response> {
       case 'catalogo': return reply({ products: await sql`SELECT * FROM public.products ORDER BY active DESC,category,name,presentation` })
       case 'accesos': {
         if (access.staff.role !== 'superadministrador') return noAccess()
-        const users = await sql`SELECT u.id,u.name,u.email,u."emailVerified",s.role,s.active
-          FROM neon_auth."user" u LEFT JOIN public.staff_access s ON s.user_id=u.id::text ORDER BY u."createdAt" DESC LIMIT 100`
-        return reply({ users })
+        const [users, invites] = await Promise.all([
+          sql`SELECT u.id,u.name,u.email,u."emailVerified",s.role,s.active
+            FROM neon_auth."user" u LEFT JOIN public.staff_access s ON s.user_id=u.id::text ORDER BY u."createdAt" DESC LIMIT 100`,
+          sql`SELECT id,email,display_name,role,status,created_at,expires_at,accepted_at
+            FROM public.staff_invites ORDER BY id DESC LIMIT 100`,
+        ])
+        return reply({ users, invites })
       }
       case 'reportes': {
         const [daily, status, cash, payroll, purchases] = await Promise.all([
@@ -196,6 +200,31 @@ export async function POST(request: Request): Promise<Response> {
           WHERE staff_access.role<>'superadministrador' RETURNING user_id`
         if (!rows.length) return bad('Cuenta no verificada o protegida')
         return reply({ user_id: rows[0].user_id }, 201)
+      }
+      case 'invite': {
+        if (access.staff.role !== 'superadministrador') return noAccess()
+        const email = text(body.email, 254).toLowerCase()
+        const name = text(body.display_name, 120)
+        const role = text(body.role, 30)
+        if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !['administrador','caja'].includes(role)) return bad('Nombre, correo o rol inválido')
+        const existing = await sql`SELECT s.user_id FROM public.staff_access s
+          JOIN neon_auth."user" u ON u.id::text=s.user_id WHERE lower(u.email)=${email} LIMIT 1`
+        if (existing.length) return reply({ error: 'La cuenta ya tiene acceso. Edita su rol en la lista de usuarios.' }, 409)
+        const rows = await sql`INSERT INTO public.staff_invites(email,display_name,role,created_by)
+          VALUES(${email},${name},${role},${access.staff.user_id})
+          ON CONFLICT(email) WHERE status='pendiente' DO UPDATE SET
+            display_name=excluded.display_name,role=excluded.role,created_by=excluded.created_by,
+            created_at=now(),expires_at=now()+interval '7 days'
+          RETURNING id,email,role,expires_at`
+        return reply({ invite: rows[0] }, 201)
+      }
+      case 'revoke_invite': {
+        if (access.staff.role !== 'superadministrador') return noAccess()
+        if (!id(body.invite_id)) return bad('Invitación inválida')
+        const rows = await sql`UPDATE public.staff_invites SET status='revocada'
+          WHERE id=${id(body.invite_id)} AND status='pendiente' RETURNING id`
+        if (!rows.length) return reply({ error: 'La invitación ya no está pendiente' }, 409)
+        return reply({ id: rows[0].id })
       }
       default: return bad('Acción desconocida')
     }

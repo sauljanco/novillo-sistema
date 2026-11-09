@@ -47,7 +47,7 @@ export function AdminPanels({ panel, isSuper }: { panel: string; isSuper: boolea
     const body: Record<string, unknown> = { action }
     for (const [key, value] of new FormData(form).entries()) {
       if (key.endsWith('_cents')) body[key] = Math.round(Number(value) * 100)
-      else if (['id','employee_id','inventory_item_id','supplier_id','quantity','quantity_delta','minimum_quantity'].includes(key)) body[key] = value === '' ? null : Number(value)
+      else if (['id','invite_id','employee_id','inventory_item_id','supplier_id','quantity','quantity_delta','minimum_quantity'].includes(key)) body[key] = value === '' ? null : Number(value)
       else if (key === 'active') body[key] = value === 'true'
       else body[key] = value
     }
@@ -125,6 +125,21 @@ export function AdminPanels({ panel, isSuper }: { panel: string; isSuper: boolea
       <h3>Estado de fichas</h3><Table headings={['Estado','Cantidad']} entries={rows(data,'status').map((s) => [s.status,s.count])} />
       <h3>Arqueos</h3><Table headings={['Caja','Apertura','Cierre','Fondo','Efectivo','QR','Contado','Diferencia']} entries={rows(data,'cash').map((s) => [s.id,dateTime(s.opened_at),dateTime(s.closed_at),money(s.opening_cash_cents),money(s.cash_sales_cents),money(s.qr_sales_cents),s.closed_at?money(s.counted_cash_cents):'Abierta',s.closed_at?money(Number(s.counted_cash_cents)-Number(s.opening_cash_cents)-Number(s.cash_sales_cents)):'—'])} />
     </>}
-    {panel === 'accesos' && isSuper && <><h2>Accesos del equipo</h2><p className="panel-subtitle">Solo cuentas con correo verificado pueden recibir un rol. Tu acceso de superadministrador queda protegido.</p><Table headings={['Cuenta','Correo','Verificado','Rol','Estado','Acción']} entries={rows(data,'users').map((u) => [u.name,u.email,u.emailVerified?'Sí':'No',u.role || 'Sin acceso',u.active===true?'Activo':'—',u.role==='superadministrador'?'Protegido':<form className="access-form" onSubmit={(e) => save(e,'access')}><input type="hidden" name="user_id" value={u.id} /><select name="role" defaultValue={u.role || 'caja'}><option value="administrador">Administrador</option><option value="caja">Caja</option><option value="cocina">Cocina</option></select><select name="active" defaultValue={String(u.active !== false)}><option value="true">Activo</option><option value="false">Suspendido</option></select><button disabled={!u.emailVerified}>Guardar</button></form>])} /></>}
+    {panel === 'accesos' && isSuper && <>
+      <h2>Usuarios y accesos</h2>
+      <p className="panel-subtitle">Crea una invitación con nombre, correo y rol. La persona registra su propia contraseña y verifica el correo antes de acceder. Tu cuenta de superadministrador queda protegida.</p>
+      <form onSubmit={(e) => save(e,'invite')} className="admin-form admin-form-wide">
+        <h3>Añadir usuario</h3>
+        <label>Nombre completo<input name="display_name" required maxLength={120} /></label>
+        <label>Correo electrónico<input name="email" type="email" required maxLength={254} /></label>
+        <label>Rol<select name="role"><option value="administrador">Administrador · todos los paneles de gestión</option><option value="caja">Caja y ventas · solo atención y caja</option></select></label>
+        <button>Crear invitación</button>
+        <p className="form-help">La invitación dura 7 días. Comparte este <a href="/?vista=operacion&registro=1" target="_blank" rel="noreferrer">enlace de registro</a> con la persona; el sistema no envía la invitación por correo.</p>
+      </form>
+      <h3>Invitaciones</h3>
+      <Table headings={['Nombre','Correo','Rol','Estado','Vence','Acción']} entries={rows(data,'invites').map((invite) => [invite.display_name,invite.email,invite.role==='caja'?'Caja y ventas':'Administrador',invite.status==='pendiente' && new Date(invite.expires_at)<new Date()?'Vencida':invite.status,dateTime(invite.expires_at),invite.status==='pendiente'?<form onSubmit={(e) => save(e,'revoke_invite')}><input type="hidden" name="invite_id" value={invite.id} /><button className="table-action">Revocar</button></form>:'—'])} />
+      <h3>Cuentas registradas</h3>
+      <Table headings={['Cuenta','Correo','Verificado','Rol','Estado','Acción']} entries={rows(data,'users').map((u) => [u.name,u.email,u.emailVerified?'Sí':'No',u.role==='caja'?'Caja y ventas':u.role || 'Sin acceso',u.active===true?'Activo':'—',u.role==='superadministrador'?'Protegido':<form className="access-form" onSubmit={(e) => save(e,'access')}><input type="hidden" name="user_id" value={u.id} /><select name="role" defaultValue={u.role || 'caja'}><option value="administrador">Administrador</option><option value="caja">Caja y ventas</option><option value="cocina">Cocina</option></select><select name="active" defaultValue={String(u.active !== false)}><option value="true">Activo</option><option value="false">Suspendido</option></select><button disabled={!u.emailVerified}>Guardar</button></form>])} />
+    </>}
   </div>
 }
