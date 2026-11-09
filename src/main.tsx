@@ -92,4 +92,4 @@ function App() {
 }
 
 const view = new URLSearchParams(location.search).get('vista')
-ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode>{view === 'cliente' ? <CustomerScreen /> : view === 'operacion' ? <main className="page"><header className="topbar"><a className="brand" href="/"><span className="brand-mark">N</span><span>NOVILLO<span className="brand-dot">.</span></span></a><span className="topbar-label">Sistema de gestión</span></header><Operations /></main> : <App />}</React.StrictMode>)
+ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode>{view === 'cliente' ? <CustomerScreen /> : view === 'operacion' ? <Operations /> : <App />}</React.StrictMode>)

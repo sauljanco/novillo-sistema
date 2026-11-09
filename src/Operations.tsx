@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { authorizedFetch, neonAuth } from './auth'
 import { AdminPanels, adminTabs } from './AdminPanels'
+import './modern.css'
 
 type Product = { id: string; category: string; name: string; presentation: string; price_cents: number }
 type Staff = { display_name: string; role: 'superadministrador' | 'administrador' | 'caja' | 'cocina' }
@@ -31,6 +32,8 @@ function OperationsWithAuth() {
   const [closing, setClosing] = useState<{ expected_cash_cents: number; difference_cents: number } | null>(null)
   const [method, setMethod] = useState<'efectivo' | 'qr'>('efectivo')
   const [panel, setPanel] = useState('operacion')
+  const [search, setSearch] = useState('')
+  const [category, setCategory] = useState('Todos')
   const [busy, setBusy] = useState(false)
   const [lastTicket, setLastTicket] = useState<number | null>(null)
   const [lastPaidTotal, setLastPaidTotal] = useState(0)
@@ -65,6 +68,8 @@ function OperationsWithAuth() {
   }, [session.data?.user?.id, panel])
 
   const cartItems = products.filter((p) => cart[p.id] > 0)
+  const categories = ['Todos', ...new Set(products.map((p) => p.category))]
+  const visibleProducts = products.filter((p) => (category === 'Todos' || p.category === category) && `${p.name} ${p.presentation} ${p.category}`.toLocaleLowerCase('es').includes(search.toLocaleLowerCase('es')))
   const total = cartItems.reduce((sum, p) => sum + p.price_cents * cart[p.id], 0)
   useEffect(() => {
     const channel = new BroadcastChannel('novillo-pantalla-cliente')
@@ -150,8 +155,8 @@ function OperationsWithAuth() {
     finally { setBusy(false) }
   }
 
-  if (session.isPending) return <section className="work-panel"><p>Comprobando sesión…</p></section>
-  if (!session.data?.user) return <section className="work-panel"><h2>Acceso del personal</h2>
+  if (session.isPending) return <section className="auth-screen"><div className="auth-card"><p>Comprobando sesión…</p></div></section>
+  if (!session.data?.user) return <section className="auth-screen"><div className="auth-card"><div className="auth-brand"><span className="brand-mark">N</span><span>NOVILLO</span></div><span className="section-kicker">SISTEMA DE GESTIÓN</span><h2>Bienvenido de nuevo</h2><p className="auth-intro">Ingresa para continuar con la operación del restaurante.</p>
     <form onSubmit={login} className="auth-form">
       {mode === 'sign-up' && <label>Nombre<input required value={name} onChange={(e) => setName(e.target.value)} /></label>}
       <label>Correo<input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
@@ -164,33 +169,38 @@ function OperationsWithAuth() {
     <button className="text-button" onClick={() => { setMode(mode === 'sign-in' ? 'sign-up' : 'sign-in'); setMessage('') }}>{mode === 'sign-in' ? 'Crear cuenta' : 'Ya tengo cuenta'}</button>
     {mode === 'sign-in' && <button className="text-button" onClick={() => { setMode('verify'); setMessage('Solicita un código si no lo recibiste.') }}>Verificar mi correo</button>}
     {message && <p role="alert">{message}</p>}
-  </section>
+  </div></section>
 
-  if (session.data.user.emailVerified === false) return <section className="work-panel"><h2>Verifica tu correo</h2><p>La cuenta necesita un código enviado a {session.data.user.email}.</p>
+  if (session.data.user.emailVerified === false) return <section className="auth-screen"><div className="auth-card"><h2>Verifica tu correo</h2><p>La cuenta necesita un código enviado a {session.data.user.email}.</p>
     <form className="auth-form" onSubmit={async (event) => { event.preventDefault(); setBusy(true); const result = await neonAuth!.emailOtp.verifyEmail({ email: session.data!.user.email, otp }); setMessage(result.error ? (result.error.message ?? 'Código inválido') : 'Correo verificado. Actualizando sesión…'); setBusy(false); if (!result.error) location.reload() }}>
       <label>Código de verificación<input required inputMode="numeric" autoComplete="one-time-code" value={otp} onChange={(e) => setOtp(e.target.value)} /></label><button disabled={busy}>Verificar correo</button>
     </form><button className="text-button" onClick={async () => { const result = await neonAuth!.emailOtp.sendVerificationOtp({ email: session.data!.user.email, type: 'email-verification' }); setMessage(result.error ? (result.error.message ?? 'No se pudo enviar') : 'Código enviado.') }}>Enviar código</button>{message && <p role="status">{message}</p>}
-  </section>
+  </div></section>
 
-  if (!staff) return <section className="work-panel"><h2>Acceso pendiente</h2><p>{message || 'Comprobando tu autorización…'}</p><button onClick={() => refresh().catch((error) => setMessage(error instanceof Error ? error.message : 'No se pudo validar la sesión.'))}>Reintentar</button> <button onClick={() => neonAuth!.signOut()}>Salir</button></section>
+  if (!staff) return <section className="auth-screen"><div className="auth-card"><h2>Acceso pendiente</h2><p>{message || 'Comprobando tu autorización…'}</p><button onClick={() => refresh().catch((error) => setMessage(error instanceof Error ? error.message : 'No se pudo validar la sesión.'))}>Reintentar</button> <button onClick={() => neonAuth!.signOut()}>Salir</button></div></section>
 
   const isAdmin = staff.role === 'superadministrador' || staff.role === 'administrador'
   const navigation = <nav className="panel-nav" aria-label="Paneles del sistema">
-    <button className={panel === 'operacion' ? 'selected' : ''} onClick={() => setPanel('operacion')}>{staff.role === 'cocina' ? 'Cocina' : 'Atención y caja'}</button>
-    {isAdmin && adminTabs.filter(([key]) => key !== 'accesos' || staff.role === 'superadministrador').map(([key, label]) =>
-      <button key={key} className={panel === key ? 'selected' : ''} onClick={() => setPanel(key)}>{label}</button>)}
+    {isAdmin && <span className="nav-caption">GENERAL</span>}
+    {isAdmin && <button className={panel === 'resumen' ? 'selected' : ''} onClick={() => setPanel('resumen')}><span className="nav-icon">◫</span>Resumen</button>}
+    <button className={panel === 'operacion' ? 'selected' : ''} onClick={() => setPanel('operacion')}><span className="nav-icon">▣</span>{staff.role === 'cocina' ? 'Cocina' : 'Atención y caja'}</button>
+    {isAdmin && <span className="nav-caption nav-caption-second">ADMINISTRACIÓN</span>}
+    {isAdmin && adminTabs.filter(([key]) => key !== 'resumen' && (key !== 'accesos' || staff.role === 'superadministrador')).map(([key, label], index) =>
+      <button key={key} className={panel === key ? 'selected' : ''} onClick={() => setPanel(key)}><span className="nav-icon">{['♙','▤','◈','▦','▥','♧'][index]}</span>{label}</button>)}
   </nav>
 
-  if (panel !== 'operacion' && isAdmin) return <section className="work-panel"><div className="work-header"><div><span className="section-kicker">SISTEMA DE GESTIÓN</span><p>{staff.display_name} · {staff.role}</p></div><button className="text-button" onClick={() => neonAuth!.signOut()}>Salir</button></div>{navigation}<AdminPanels panel={panel} isSuper={staff.role === 'superadministrador'} /></section>
+  const shell = (content: React.ReactNode, title: string, subtitle: string) => <div className="app-shell"><aside className="app-sidebar"><a className="side-brand" href="/"><span className="brand-mark">N</span><span>NOVILLO</span></a>{navigation}<div className="side-profile"><span className="profile-avatar">{staff.display_name.slice(0, 2).toUpperCase()}</span><span><strong>{staff.display_name}</strong><small>{staff.role === 'superadministrador' ? 'Superadministrador' : staff.role === 'caja' ? 'Caja y ventas' : staff.role}</small></span></div></aside><div className="app-main"><header className="app-topbar"><span>Panel <span className="crumb-separator">/</span> {title}</span><div className="topbar-right"><span className="topbar-date">{new Date().toLocaleDateString('es-BO', { timeZone: 'America/La_Paz', day: 'numeric', month: 'short', year: 'numeric' })}</span><button onClick={() => neonAuth!.signOut()}>Salir</button></div></header><main className="work-panel"><div className="work-header"><div><span className="section-kicker">NOVILLO · SACABA</span><h1>{title}</h1><p>{subtitle}</p></div>{panel === 'operacion' && cash && <span className="cash-status">● Caja abierta · #{cash.id}</span>}</div>{content}</main></div></div>
 
-  return <section className="work-panel"><div className="work-header"><div><span className="section-kicker">OPERACIÓN</span><h2>{staff.role === 'cocina' ? 'Cocina y fichas' : 'Atención y caja'}</h2><p>{staff.display_name} · {staff.role === 'caja' ? 'caja y ventas' : staff.role}</p></div><button className="text-button" onClick={() => neonAuth!.signOut()}>Salir</button></div>{navigation}
+  if (panel !== 'operacion' && isAdmin) return shell(<AdminPanels panel={panel} isSuper={staff.role === 'superadministrador'} />, adminTabs.find(([key]) => key === panel)?.[1] || 'Gestión', 'Control y seguimiento del restaurante en un solo lugar.')
+
+  return shell(<>
     {message && <p role="status" className="notice">{message}</p>}
     {closing && <p className="notice" role="status">Caja cerrada. Efectivo esperado {money(closing.expected_cash_cents)} · Diferencia {money(closing.difference_cents)}.</p>}
     {staff.role !== 'cocina' && (!cash ? <form onSubmit={openCash} className="cash-open"><h3>Abrir caja</h3><label>Fondo inicial en Bs<input type="number" min="0" step="0.01" value={opening} onChange={(e) => setOpening(e.target.value)} /></label><button disabled={busy}>Abrir turno</button></form>
       : <><div className="cash-summary"><span>Caja Nº {cash.id}</span><span>Fondo {money(cash.opening_cash_cents)}</span><span>Efectivo vendido {money(cash.cash_sales_cents)}</span><span>QR vendido {money(cash.qr_sales_cents)}</span></div>
-        <div className="order-layout"><div><h3>Agregar productos</h3><div className="product-list">{products.map((p) => <button key={p.id} onClick={() => { setLastTicket(null); setCart({ ...cart, [p.id]: (cart[p.id] ?? 0) + 1 }) }}>{p.name} · {p.presentation}<span>{money(p.price_cents)}</span></button>)}</div></div>
+        <div className="order-layout"><div className="catalog-panel"><h3>Seleccionar productos</h3><input className="product-search" type="search" placeholder="Buscar por nombre o categoría" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Buscar productos" /><div className="category-filter">{categories.map((c) => <button key={c} className={category === c ? 'selected' : ''} onClick={() => setCategory(c)}>{c}</button>)}</div><div className="product-list">{visibleProducts.map((p) => <button key={p.id} onClick={() => { setLastTicket(null); setCart({ ...cart, [p.id]: (cart[p.id] ?? 0) + 1 }) }}><span className="product-name">{p.name}<small>{p.presentation}</small></span><strong>{money(p.price_cents)}</strong></button>)}</div></div>
           <div className="cart"><h3>Pedido actual</h3>{cartItems.length === 0 && <p>Selecciona productos.</p>}{cartItems.map((p) => <div className="cart-row" key={p.id}><span>{p.name} × {cart[p.id]}</span><button aria-label={`Quitar un ${p.name}`} onClick={() => setCart({ ...cart, [p.id]: cart[p.id] - 1 })}>−</button><strong>{money(p.price_cents * cart[p.id])}</strong></div>)}<strong className="cart-total">Total {money(total)}</strong><label>Medio de pago<select value={method} onChange={(e) => setMethod(e.target.value as 'efectivo' | 'qr')}><option value="efectivo">Efectivo</option><option value="qr">QR</option></select></label><button disabled={busy || cartItems.length === 0} onClick={charge}>Registrar cobro y emitir ficha</button><a href="/?vista=cliente" target="_blank" rel="noreferrer">Abrir segunda pantalla ↗</a></div></div></>)}
     {staff.role !== 'cocina' && cash && <form onSubmit={closeCash} className="cash-open"><h3>Cerrar caja</h3><p>Efectivo esperado: {money(cash.opening_cash_cents + cash.cash_sales_cents)}. Ventas QR: {money(cash.qr_sales_cents)}.</p><label>Efectivo contado en Bs<input required type="number" min="0" step="0.01" value={counted} onChange={(e) => setCounted(e.target.value)} /></label><button disabled={busy}>Guardar arqueo y cerrar</button></form>}
     <h3>Fichas de hoy</h3><div className="ticket-list">{orders.map((o) => <div key={o.id}><strong>#{o.ticket_number}</strong><span>{o.items.map((i) => `${i.quantity} ${i.name}`).join(', ')}</span><span>{money(o.total_cents)} · {o.payment_method} · {o.status}</span>{['superadministrador','administrador','cocina'].includes(staff.role) && ['pendiente','preparando','listo'].includes(o.status) && <button disabled={busy} onClick={() => advanceOrder(o)}>{o.status === 'pendiente' ? 'Preparar' : o.status === 'preparando' ? 'Marcar listo' : 'Entregar'}</button>}</div>)}</div>
-  </section>
+  </>, staff.role === 'cocina' ? 'Cocina y fichas' : 'Atención y caja', 'Toma pedidos, registra cobros y emite fichas para cada turno.')
 }

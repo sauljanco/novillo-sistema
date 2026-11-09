@@ -64,6 +64,19 @@ export function AdminPanels({ panel, isSuper }: { panel: string; isSuper: boolea
 
   if (loading) return <p role="status">Cargando {panel}…</p>
   const employees = rows(data, 'employees'), items = rows(data, 'items'), suppliers = rows(data, 'suppliers')
+  const recentSessions = rows(data, 'sessions')
+  const salesByDay = new Map<string, number>()
+  for (const session of recentSessions) {
+    const day = new Date(String(session.opened_at)).toLocaleDateString('en-CA', { timeZone: 'America/La_Paz' })
+    salesByDay.set(day, (salesByDay.get(day) || 0) + Number(session.cash_sales_cents || 0) + Number(session.qr_sales_cents || 0))
+  }
+  const chartDays = Array.from({ length: 7 }, (_, index) => {
+    const day = new Date(); day.setDate(day.getDate() - 6 + index)
+    const key = day.toLocaleDateString('en-CA', { timeZone: 'America/La_Paz' })
+    return { key, label: day.toLocaleDateString('es-BO', { weekday: 'short', timeZone: 'America/La_Paz' }), value: salesByDay.get(key) || 0 }
+  })
+  const chartMax = Math.max(...chartDays.map((day) => day.value), 1)
+  const openSession = recentSessions.find((session) => !session.closed_at)
   return <div className="admin-panel">
     {notice && <p className="notice" role="status">{notice}</p>}
     {panel === 'resumen' && <>
@@ -73,10 +86,9 @@ export function AdminPanels({ panel, isSuper }: { panel: string; isSuper: boolea
         <div><small>Fichas</small><strong>{data.sales?.tickets ?? 0}</strong></div>
         <div><small>Efectivo</small><strong>{money(data.sales?.cash_cents)}</strong></div>
         <div><small>QR</small><strong>{money(data.sales?.qr_cents)}</strong></div>
-        <div><small>Compras de hoy</small><strong>{money(data.purchases?.amount_cents)}</strong></div>
-        <div><small>Sueldos pagados hoy</small><strong>{money(data.payroll?.amount_cents)}</strong></div>
-        <div><small>Artículos en mínimo</small><strong>{data.lowStock?.count ?? 0}</strong></div>
       </div>
+      <div className="overview-grid"><section className="overview-card"><h3>Ventas recientes</h3><p>Importes por día de las cajas registradas.</p><div className="sales-chart">{chartDays.map((day) => <div className="chart-day" key={day.key} title={`${day.key}: ${money(day.value)}`}><div className="chart-track"><div className="chart-bar" style={{ height: `${Math.max(day.value ? 8 : 2, day.value / chartMax * 100)}%` }} /></div><span>{day.label}</span></div>)}</div></section><section className="overview-card"><div className="overview-card-heading"><h3>Estado de caja</h3><span className={openSession ? 'state-open' : 'state-closed'}>{openSession ? 'Abierta' : 'Cerrada'}</span></div>{openSession ? <><div className="overview-line"><span>Fondo inicial</span><strong>{money(openSession.opening_cash_cents)}</strong></div><div className="overview-line"><span>Ventas efectivo</span><strong>{money(openSession.cash_sales_cents)}</strong></div><div className="overview-line"><span>Esperado en caja</span><strong>{money(Number(openSession.opening_cash_cents) + Number(openSession.cash_sales_cents))}</strong></div></> : <p>No hay una caja abierta.</p>}</section></div>
+      <div className="metric-grid secondary-metrics"><div><small>Compras de hoy</small><strong>{money(data.purchases?.amount_cents)}</strong></div><div><small>Sueldos pagados hoy</small><strong>{money(data.payroll?.amount_cents)}</strong></div><div><small>Artículos en mínimo</small><strong>{data.lowStock?.count ?? 0}</strong></div></div>
       <h3>Últimos arqueos</h3><Table headings={['Caja','Apertura','Cierre','Fondo','Ventas efectivo','Ventas QR','Contado','Diferencia']} entries={rows(data,'sessions').map((s) => [s.id,dateTime(s.opened_at),dateTime(s.closed_at),money(s.opening_cash_cents),money(s.cash_sales_cents),money(s.qr_sales_cents),s.closed_at?money(s.counted_cash_cents):'Abierta',s.closed_at?money(Number(s.counted_cash_cents)-Number(s.opening_cash_cents)-Number(s.cash_sales_cents)):'—'])} />
     </>}
     {panel === 'personal' && <>
