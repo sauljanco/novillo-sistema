@@ -77,7 +77,7 @@ export function AdminPanels({ panel, isSuper }: { panel: string; isSuper: boolea
   })
   const chartMax = Math.max(...chartDays.map((day) => day.value), 1)
   const openSession = recentSessions.find((session) => !session.closed_at)
-  return <div className="admin-panel">
+  return <div className={`admin-panel panel-${panel}`}>
     {notice && <p className="notice" role="status">{notice}</p>}
     {panel === 'resumen' && <>
       <h2>Resumen del negocio</h2><p className="panel-subtitle">Operación de hoy · hora de Bolivia</p>
