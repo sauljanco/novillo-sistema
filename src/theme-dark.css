@@ -10,6 +10,8 @@
 :root[data-theme='dark'] .topbar-right button{background:#241d2c;border-color:#493653;color:#e8d9f1}
 :root[data-theme='dark'] .topbar-right button:hover{background:#342341}
 :root[data-theme='dark'] .work-header h1,:root[data-theme='dark'] .work-panel h2,:root[data-theme='dark'] .work-panel h3,:root[data-theme='dark'] .editor-heading h2{color:var(--ink)}
+:root[data-theme='dark'] .work-header .section-kicker,:root[data-theme='dark'] .work-panel .panel-sections button.active,:root[data-theme='dark'] .work-panel .back-button,:root[data-theme='dark'] .work-panel .text-button,:root[data-theme='dark'] .auth-card .section-kicker,:root[data-theme='dark'] .auth-card .text-button{color:#d4acee}
+:root[data-theme='dark'] .work-panel .panel-sections button.active{border-bottom-color:#ae74d3}
 :root[data-theme='dark'] .work-header p,:root[data-theme='dark'] .editor-heading p,:root[data-theme='dark'] .form-help{color:var(--muted)}
 :root[data-theme='dark'] .cash-summary span,:root[data-theme='dark'] .catalog-panel,:root[data-theme='dark'] .cart,:root[data-theme='dark'] .cash-open,:root[data-theme='dark'] .metric-grid>div,:root[data-theme='dark'] .overview-card,:root[data-theme='dark'] .admin-form,:root[data-theme='dark'] .admin-table-wrap,:root[data-theme='dark'] .ticket-list,:root[data-theme='dark'] .panel-loading{background:var(--surface);border-color:var(--line);box-shadow:none;color:var(--ink)}
 :root[data-theme='dark'] .sales-metrics span{background:var(--surface)!important;border-color:var(--line)!important;box-shadow:none}
