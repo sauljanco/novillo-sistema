@@ -1,1 +1,7 @@
 .sales-metrics{gap:10px}.sales-metrics span{display:flex;flex-direction:column;gap:12px;min-height:105px;padding:19px 21px!important;background:linear-gradient(145deg,#fff,#fcf8f4)!important}.sales-metrics span:first-child{background:linear-gradient(145deg,#33211a,#1d1714)!important;border-color:#33211a!important}.sales-metrics small{font-size:9px;color:#94867a;letter-spacing:.14em;font-weight:800}.sales-metrics span:first-child small{color:#d4a685}.sales-metrics strong{font-size:20px;color:#2f2822;letter-spacing:-.04em}.sales-metrics span:first-child strong{color:#ffbf77}
+.sales-metrics span{background:#fff!important;border-color:var(--line)!important;box-shadow:0 2px 12px #2d153608}
+.sales-metrics span:first-child{background:var(--surface-dark)!important;border-color:var(--surface-dark)!important}
+.sales-metrics small{color:var(--muted)}
+.sales-metrics span:first-child small{color:#c9b8d3}
+.sales-metrics strong{color:var(--ink);font-weight:700}
+.sales-metrics span:first-child strong{color:#fff}

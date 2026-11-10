@@ -7,3 +7,28 @@
 .guest-total{margin-top:auto;padding:23px 25px;border:1px solid #b2783f77;border-radius:16px;background:linear-gradient(135deg,#49301e,#2d1e17);box-shadow:0 20px 45px #0003}.guest-total>div{display:flex;justify-content:space-between;align-items:end;gap:15px}.guest-total span{font-size:11px;font-weight:800;letter-spacing:.13em;color:#eac5a0}.guest-total strong{font-family:'DM Serif Display',Georgia,serif;font-size:clamp(35px,3.4vw,56px);font-weight:400;color:#ffcd86;line-height:1}.guest-total p{margin:12px 0 0;color:#c8a783;font-size:11px}.guest-order-footer{display:flex;justify-content:space-between;gap:12px;margin-top:28px;color:#977e6e;font-size:9px;font-weight:800;letter-spacing:.15em}
 @keyframes guest-pulse{50%{box-shadow:0 0 0 8px #ffab640b}}@keyframes guest-enter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:1050px){.guest-body{grid-template-columns:1fr}.guest-story{min-height:460px;border-right:0;border-bottom:1px solid #ffffff20}.guest-hero-art{width:35%;right:9%;bottom:14%}.guest-order-list{max-height:none}.guest-order{min-height:530px}}@media(max-width:620px){.guest-header{padding:17px}.guest-brand .novillo-logo{width:45px;height:45px}.guest-brand strong{font-size:16px}.guest-brand span,.guest-header-right>span{display:none}.guest-story{min-height:445px;padding:42px 22px 25px}.guest-story h1{font-size:clamp(56px,12vw,76px)}.guest-story p{font-size:13px;max-width:75%}.guest-hero-art{width:47%;right:-2%;bottom:7%}.guest-order{padding:35px 20px 23px}.guest-order h2{font-size:39px}.guest-status{font-size:9px}.guest-item-photo{width:51px;height:51px}.guest-item-info strong{font-size:12px}.guest-item b{font-size:11px}.guest-total{padding:18px}.guest-total>div{align-items:start;flex-direction:column}.guest-total strong{font-size:42px}}@media(prefers-reduced-motion:reduce){.guest-status.in-progress i,.guest-item{animation:none}}
+
+/* The customer display keeps its theater-like dark surface with restrained brand accents. */
+.guest-display{--gold:#c98938;--cream:#fff;--guest-purple:#bf9adf;background:#0d0b11}
+.guest-atmosphere{background:#0d0b11}
+.guest-header{border-color:#ffffff19}
+.guest-brand span,.guest-header-right,.guest-story-footer,.guest-order-footer{color:#b2a5bd}
+.guest-kicker,.guest-story h1 em{color:var(--guest-purple)}
+.guest-kicker i{background:var(--guest-purple)}
+.guest-story{border-color:#ffffff1a}
+.guest-story p,.guest-item-info span,.guest-empty p{color:#c2b6cb}
+.guest-hero-art{transform:none}
+.guest-hero-art img{filter:none}
+.guest-art-halo{border-color:#8152a455;box-shadow:none;background:transparent}
+.guest-hero-art span{color:#b8a5c6}
+.guest-order{background:#18141d}
+.guest-status.in-progress{border-color:#8f61ae;color:#dfc4f4}
+.guest-status.in-progress i{background:#a46bc9;box-shadow:none}
+.guest-status.in-progress i,.guest-item{animation:none}
+.guest-item-photo{background:#291b34;color:var(--guest-purple)}
+.guest-item b{color:#ddc5ef}
+.guest-empty>span{border-color:#76508e;color:var(--guest-purple)}
+.guest-empty strong{color:#fff}
+.guest-total{border-color:#624278;background:#241a2b;box-shadow:none}
+.guest-total span,.guest-total p{color:#c6b1d5}
+.guest-total strong{color:#fff;font-family:Manrope,system-ui,sans-serif;font-weight:700}
