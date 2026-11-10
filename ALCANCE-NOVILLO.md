@@ -3,11 +3,11 @@
 Estado: prototipo local en desarrollo. Entrevista y dos fotografías del menú recibidas el 7 de noviembre de 2026. Moneda: bolivianos (Bs).
 
 ## Flujo confirmado
-El operador arma el pedido; una segunda pantalla muestra al cliente productos, cantidades y monto a cancelar. El cliente paga al hacer el pedido. La ficha numerada se emite después de registrar el cobro y pasa a la cola de preparación. Los medios de pago se configuran inicialmente como efectivo y QR; deben validarse con el restaurante.
+El operador arma y registra el pedido; se emite una ficha numerada sin cobrar y pasa a preparación. La segunda pantalla muestra productos, cantidades y monto. Al terminar de comer, el cliente solicita la cuenta: caja cobra el pedido y emite un recibo con el mismo número de ficha. Los medios de pago iniciales son efectivo y QR.
 
 ## Módulos previstos
 1. Atención: catálogo editable, pedido, cobro, ficha, preparación y entrega.
-2. Segunda pantalla: resumen sincronizado del pedido en curso, total a pagar y ficha después del pago; sin controles administrativos.
+2. Segunda pantalla: resumen sincronizado del pedido en curso, número de ficha, total y estado de pago; sin controles administrativos.
 3. Caja: apertura, ingresos/egresos, arqueo y cierre por turno; QR se concilia aparte del efectivo.
 4. Personal (~8 personas): días previstos, jornadas realmente trabajadas, turnos rotativos, tarifas independientes para jornada completa y medio turno, adelantos, pagos y saldo.
 5. Compras e inversión: proveedores, compras, pagos pendientes, aportes y adquisición de equipos separados de ventas.
@@ -26,7 +26,7 @@ Las 45 presentaciones y precios de las imágenes están transcritos en menu-inic
 ## Criterios para validar la primera versión
 - Dos churrascos de Bs 75 más una limonada en jarra de Bs 25 suman Bs 175.
 - La segunda pantalla muestra el pedido en curso y el monto a cancelar.
-- La ficha aparece solo después del pago.
+- La ficha aparece al registrar el pedido; el recibo aparece solo después del pago y conserva el número.
 - Un cobro QR se suma a ventas y no al efectivo esperado.
 - Días programados y realmente trabajados son campos distintos.
 - La tarifa del medio turno es independiente de la jornada completa.

@@ -17,14 +17,16 @@ export async function GET(request: Request): Promise<Response> {
     switch (panel) {
       case 'resumen': {
         const [sales, sessions, purchases, payroll, lowStock] = await Promise.all([
-          sql`SELECT count(*)::integer AS tickets, COALESCE(sum(total_cents) FILTER (WHERE status <> 'anulado'),0)::integer AS sales_cents,
+          sql`SELECT count(*) FILTER (WHERE service_date=(now() AT TIME ZONE 'America/La_Paz')::date)::integer AS tickets,
+            COALESCE(sum(total_cents) FILTER (WHERE paid_at IS NOT NULL AND status <> 'anulado'),0)::integer AS sales_cents,
             COALESCE(sum(total_cents) FILTER (WHERE payment_method='efectivo' AND status <> 'anulado'),0)::integer AS cash_cents,
             COALESCE(sum(total_cents) FILTER (WHERE payment_method='qr' AND status <> 'anulado'),0)::integer AS qr_cents
-            FROM public.orders WHERE service_date=(now() AT TIME ZONE 'America/La_Paz')::date`,
+            FROM public.orders WHERE service_date=(now() AT TIME ZONE 'America/La_Paz')::date
+              OR (paid_at AT TIME ZONE 'America/La_Paz')::date=(now() AT TIME ZONE 'America/La_Paz')::date`,
           sql`SELECT s.id,s.opened_at,s.closed_at,s.opening_cash_cents,s.counted_cash_cents,
             COALESCE(sum(o.total_cents) FILTER (WHERE o.payment_method='efectivo' AND o.status<>'anulado'),0)::integer AS cash_sales_cents,
             COALESCE(sum(o.total_cents) FILTER (WHERE o.payment_method='qr' AND o.status<>'anulado'),0)::integer AS qr_sales_cents
-            FROM public.cash_sessions s LEFT JOIN public.orders o ON o.cash_session_id=s.id
+            FROM public.cash_sessions s LEFT JOIN public.orders o ON o.paid_cash_session_id=s.id
             GROUP BY s.id ORDER BY s.id DESC LIMIT 12`,
           sql`SELECT COALESCE(sum(amount_cents),0)::integer AS amount_cents FROM public.purchases
             WHERE (purchased_at AT TIME ZONE 'America/La_Paz')::date=(now() AT TIME ZONE 'America/La_Paz')::date`,
@@ -84,18 +86,26 @@ export async function GET(request: Request): Promise<Response> {
       }
       case 'reportes': {
         const [daily, status, cash, payroll, purchases] = await Promise.all([
-          sql`SELECT service_date,count(*)::integer AS tickets,
-            COALESCE(sum(total_cents) FILTER (WHERE status<>'anulado'),0)::integer AS sales_cents,
-            COALESCE(sum(total_cents) FILTER (WHERE payment_method='efectivo' AND status<>'anulado'),0)::integer AS cash_cents,
-            COALESCE(sum(total_cents) FILTER (WHERE payment_method='qr' AND status<>'anulado'),0)::integer AS qr_cents
-            FROM public.orders WHERE service_date >= (now() AT TIME ZONE 'America/La_Paz')::date - 30
-            GROUP BY service_date ORDER BY service_date DESC`,
+          sql`WITH tickets AS (SELECT service_date,count(*)::integer AS tickets FROM public.orders
+              WHERE service_date >= (now() AT TIME ZONE 'America/La_Paz')::date - 30 GROUP BY service_date),
+            payments AS (SELECT (paid_at AT TIME ZONE 'America/La_Paz')::date AS service_date,
+              COALESCE(sum(total_cents),0)::integer AS sales_cents,
+              COALESCE(sum(total_cents) FILTER (WHERE payment_method='efectivo'),0)::integer AS cash_cents,
+              COALESCE(sum(total_cents) FILTER (WHERE payment_method='qr'),0)::integer AS qr_cents
+              FROM public.orders WHERE paid_at IS NOT NULL AND status<>'anulado'
+                AND (paid_at AT TIME ZONE 'America/La_Paz')::date >= (now() AT TIME ZONE 'America/La_Paz')::date - 30
+              GROUP BY 1)
+            SELECT COALESCE(t.service_date,p.service_date) AS service_date,COALESCE(t.tickets,0)::integer AS tickets,
+              COALESCE(p.sales_cents,0)::integer AS sales_cents,COALESCE(p.cash_cents,0)::integer AS cash_cents,
+              COALESCE(p.qr_cents,0)::integer AS qr_cents
+            FROM tickets t FULL JOIN payments p ON p.service_date=t.service_date
+            ORDER BY service_date DESC`,
           sql`SELECT status,count(*)::integer AS count FROM public.orders
             WHERE service_date >= (now() AT TIME ZONE 'America/La_Paz')::date - 30 GROUP BY status`,
           sql`SELECT s.id,s.opened_at,s.closed_at,s.opening_cash_cents,s.counted_cash_cents,
             COALESCE(sum(o.total_cents) FILTER (WHERE o.payment_method='efectivo' AND o.status<>'anulado'),0)::integer AS cash_sales_cents,
             COALESCE(sum(o.total_cents) FILTER (WHERE o.payment_method='qr' AND o.status<>'anulado'),0)::integer AS qr_sales_cents
-            FROM public.cash_sessions s LEFT JOIN public.orders o ON o.cash_session_id=s.id
+            FROM public.cash_sessions s LEFT JOIN public.orders o ON o.paid_cash_session_id=s.id
             GROUP BY s.id ORDER BY s.id DESC LIMIT 30`,
           sql`SELECT COALESCE(sum(earned_cents),0)::integer AS earned_cents FROM public.attendance
             WHERE work_date >= (now() AT TIME ZONE 'America/La_Paz')::date - 30`,

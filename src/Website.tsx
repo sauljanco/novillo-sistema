@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { categoriesWithProducts } from './menuCategories'
 import { BrandLogo } from './BrandLogo'
 import './website.css'
 
@@ -37,7 +38,7 @@ export function Website() {
     return () => controller.abort()
   }, [])
 
-  const categories = [...new Set(products.map((product) => product.category))]
+  const categories = categoriesWithProducts(products)
   const shownProducts = products.filter((product) => product.category === category)
   const closeNav = () => setMenuOpen(false)
 
@@ -81,7 +82,7 @@ export function Website() {
       <section className="site-menu-section" id="menu" aria-labelledby="site-menu-title"><div className="site-container"><div className="site-section-heading"><div><span className="site-section-label">SABORES DE NOVILLO</span><h2 id="site-menu-title">Nuestro menú</h2><p>Explora los platos y bebidas disponibles. Precios en bolivianos.</p></div><span className="site-menu-number">MENÚ / 01</span></div>
         {menuState === 'loading' && <p className="site-menu-message" role="status">Cargando menú…</p>}
         {menuState === 'error' && <p className="site-menu-message" role="alert">El menú no está disponible en este momento.</p>}
-        {menuState === 'ready' && <><div className="site-menu-categories" role="group" aria-label="Categorías del menú">{categories.map((name) => <button key={name} type="button" className={name === category ? 'active' : ''} aria-pressed={name === category} onClick={() => setCategory(name)}>{name}</button>)}</div><div className="site-menu-list">{shownProducts.map((product) => <article className="site-menu-item" key={product.id}><div className="site-menu-thumb">{product.image_url ? <img src={product.image_url} alt="" loading="lazy" /> : <span aria-hidden="true">✦</span>}</div><div><h3>{product.name}</h3><p>{product.presentation}</p></div><strong>{money(product.price_cents)}</strong></article>)}</div></>}
+        {menuState === 'ready' && <><div className="site-menu-categories" role="group" aria-label="Categorías del menú">{categories.map((name) => <button key={name} type="button" className={name === category ? 'active' : ''} aria-pressed={name === category} onClick={() => setCategory(name)}>{name}</button>)}</div><div className="site-menu-list">{shownProducts.map((product) => <article className="site-menu-item" key={product.id}><div className="site-menu-thumb">{product.image_url ? <img src={product.image_url} alt="" loading="lazy" /> : <span aria-hidden="true">✦</span>}</div><div><h3>{product.name}</h3><p>{product.presentation}</p></div><strong>{money(product.price_cents)}</strong></article>)}{shownProducts.length === 0 && <p className="site-menu-empty">Próximamente en esta categoría.</p>}</div></>}
         <p className="site-menu-footnote">Los cortes incluyen un entremés y buffet de guarniciones y ensaladas.</p>
       </div></section>
 

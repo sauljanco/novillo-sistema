@@ -7,7 +7,7 @@ export async function GET(request: Request): Promise<Response> {
     SELECT s.id, s.opened_at, s.opening_cash_cents, s.opened_by,
       COALESCE(sum(o.total_cents) FILTER (WHERE o.payment_method = 'efectivo' AND o.status <> 'anulado'), 0)::integer AS cash_sales_cents,
       COALESCE(sum(o.total_cents) FILTER (WHERE o.payment_method = 'qr' AND o.status <> 'anulado'), 0)::integer AS qr_sales_cents
-    FROM public.cash_sessions s LEFT JOIN public.orders o ON o.cash_session_id = s.id
+    FROM public.cash_sessions s LEFT JOIN public.orders o ON o.paid_cash_session_id = s.id
     WHERE s.closed_at IS NULL
     GROUP BY s.id ORDER BY s.id DESC LIMIT 1`
   return Response.json({ session: sessions[0] ?? null }, { headers: { 'Cache-Control': 'no-store' } })

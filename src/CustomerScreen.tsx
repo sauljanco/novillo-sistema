@@ -3,7 +3,7 @@ import { BrandLogo } from './BrandLogo'
 import './customer.css'
 
 type DisplayItem = { name: string; presentation: string; quantity: number; price_cents: number; image_url?: string | null }
-type Display = { items: DisplayItem[]; total_cents: number; ticket_number: number | null; updated_at?: number }
+type Display = { items: DisplayItem[]; total_cents: number; ticket_number: number | null; paid?: boolean; updated_at?: number }
 const empty: Display = { items: [], total_cents: 0, ticket_number: null }
 const money = (cents: number) => `Bs ${(cents / 100).toFixed(2)}`
 
@@ -17,7 +17,7 @@ export function CustomerScreen() {
     return () => channel.close()
   }, [])
 
-  const paid = display.ticket_number !== null
+  const paid = display.paid === true
   const hasItems = display.items.length > 0
   const visibleItems = display.items.slice(0, 5)
   const remaining = display.items.length - visibleItems.length
@@ -29,8 +29,8 @@ export function CustomerScreen() {
     </section>
     <section className="guest-order" aria-live="polite">
       <header className="guest-order-heading">
-        <h1>{paid ? `Ficha ${display.ticket_number}` : 'Tu pedido'}</h1>
-        <span className={`guest-status ${paid ? 'paid' : hasItems ? 'in-progress' : ''}`}><i />{paid ? 'Pagado' : hasItems ? 'Por cobrar' : 'En espera'}</span>
+        <h1>{display.ticket_number !== null ? `Pedido ${display.ticket_number}` : 'Tu pedido'}</h1>
+        <span className={`guest-status ${paid ? 'paid' : hasItems ? 'in-progress' : ''}`}><i />{paid ? 'Pagado' : display.ticket_number !== null ? 'Pedido registrado' : hasItems ? 'Por registrar' : 'En espera'}</span>
       </header>
       <div className="guest-order-list">
         {hasItems ? <>{visibleItems.map((item, index) => <article className="guest-item" key={`${item.name}-${item.presentation}-${index}`}>

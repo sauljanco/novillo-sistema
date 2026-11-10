@@ -57,6 +57,7 @@
 .site-menu-categories { display:flex; gap:7px; overflow-x:auto; padding:38px 0 26px; scrollbar-width:thin; }
 .site-menu-categories button { flex:none; min-height:38px; padding:8px 16px; border:1px solid #55463d; border-radius:25px; background:transparent; color:#cdbbad; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap; }
 .site-menu-categories button:hover { border-color:#d5814e; color:#fff; }
+.site-menu-empty { padding:24px 0; color:#cdbbad; font-size:13px; }
 .site-menu-categories button.active { background:var(--site-red); border-color:var(--site-red); color:#fff; }
 .site-menu-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
 .site-menu-item { display:flex; justify-content:space-between; align-items:center; gap:15px; min-height:94px; padding:19px 22px; background:#27211d; border:1px solid #473a31; border-radius:11px; }

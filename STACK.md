@@ -26,7 +26,7 @@ Decisión: React + TypeScript + Vite para la interfaz; Neon Postgres y Better Au
 | Pruebas | Vitest, React Testing Library, Playwright | Cálculos, interfaz y flujo de cobro |
 | Repositorio y CI | GitHub + Actions | Revisión de cambios y validación automática |
 
-No conectar Postgres directamente desde el navegador ni publicar `DATABASE_URL` como variable `VITE_*`. El frontend llamará a una API pequeña en Vercel; esta validará la sesión y el rol. La operación de cobrar, registrar el pago y asignar la ficha será una transacción indivisible e idempotente.
+No conectar Postgres directamente desde el navegador ni publicar `DATABASE_URL` como variable `VITE_*`. El frontend llama a una API pequeña en Vercel; esta valida sesión y rol. La ficha se asigna en la transacción que registra el pedido; el cobro se registra después con el mismo número y la base impide cobrar dos veces.
 
 ## Segunda pantalla
 
