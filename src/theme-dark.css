@@ -1,0 +1,51 @@
+/* The management theme is scoped so the public restaurant site keeps its own identity. */
+:root[data-theme='dark'] .app-shell,:root[data-theme='dark'] .auth-screen{
+  --canvas:#121018;--surface:#1d1923;--ink:#f1eaf5;--muted:#b4a8be;--line:#393040;
+  --surface-selected:#32223e;--surface-dark:#15121b;
+  color:var(--ink);background:var(--canvas);
+}
+:root[data-theme='dark'] .app-main,:root[data-theme='dark'] .work-panel,:root[data-theme='dark'] .auth-screen{background:var(--canvas);color:var(--ink)}
+:root[data-theme='dark'] .app-sidebar{background:#0d0b11;border-right:1px solid #302739}
+:root[data-theme='dark'] .app-topbar{background:#18141d;border-color:var(--line);color:var(--muted)}
+:root[data-theme='dark'] .topbar-right button{background:#241d2c;border-color:#493653;color:#e8d9f1}
+:root[data-theme='dark'] .topbar-right button:hover{background:#342341}
+:root[data-theme='dark'] .work-header h1,:root[data-theme='dark'] .work-panel h2,:root[data-theme='dark'] .work-panel h3,:root[data-theme='dark'] .editor-heading h2{color:var(--ink)}
+:root[data-theme='dark'] .work-header p,:root[data-theme='dark'] .editor-heading p,:root[data-theme='dark'] .form-help{color:var(--muted)}
+:root[data-theme='dark'] .cash-summary span,:root[data-theme='dark'] .catalog-panel,:root[data-theme='dark'] .cart,:root[data-theme='dark'] .cash-open,:root[data-theme='dark'] .metric-grid>div,:root[data-theme='dark'] .overview-card,:root[data-theme='dark'] .admin-form,:root[data-theme='dark'] .admin-table-wrap,:root[data-theme='dark'] .ticket-list,:root[data-theme='dark'] .panel-loading{background:var(--surface);border-color:var(--line);box-shadow:none;color:var(--ink)}
+:root[data-theme='dark'] .sales-metrics span{background:var(--surface)!important;border-color:var(--line)!important;box-shadow:none}
+:root[data-theme='dark'] .sales-metrics span:first-child{background:#271a33!important;border-color:#473050!important}
+:root[data-theme='dark'] .sales-metrics strong,:root[data-theme='dark'] .sales-metrics span:first-child strong{color:var(--ink)}
+:root[data-theme='dark'] .sales-metrics small,:root[data-theme='dark'] .sales-metrics span:first-child small{color:var(--muted)}
+:root[data-theme='dark'] .work-panel input,:root[data-theme='dark'] .work-panel select,:root[data-theme='dark'] .auth-card input{background:#241f2a;border-color:#493d51;color:var(--ink);color-scheme:dark}
+:root[data-theme='dark'] .work-panel input::placeholder,:root[data-theme='dark'] .auth-card input::placeholder{color:#9d90a7}
+:root[data-theme='dark'] .work-panel label,:root[data-theme='dark'] .auth-card label{color:var(--muted)}
+:root[data-theme='dark'] .work-panel .secondary-utility,:root[data-theme='dark'] .work-panel .form-actions .secondary,:root[data-theme='dark'] .work-panel .admin-form .secondary,:root[data-theme='dark'] .work-panel .table-action,:root[data-theme='dark'] .sales-cart .sales-checkout>a,:root[data-theme='dark'] .product-photo-picker{background:#261f2c;color:#d9b9ed!important;border:1px solid #574364}
+:root[data-theme='dark'] .work-panel .secondary-utility:hover,:root[data-theme='dark'] .work-panel .form-actions .secondary:hover,:root[data-theme='dark'] .work-panel .admin-form .secondary:hover,:root[data-theme='dark'] .work-panel .table-action:hover,:root[data-theme='dark'] .sales-cart .sales-checkout>a:hover{background:#372540}
+:root[data-theme='dark'] .work-panel .category-filter button,:root[data-theme='dark'] .sales-catalog .category-filter button{background:#302638;color:#d3c4dc}
+:root[data-theme='dark'] .work-panel .category-filter button.selected{background:var(--brand-primary)!important;color:#f7f1fa}
+:root[data-theme='dark'] .work-panel .panel-sections button:hover:not(:disabled){background:#33233d}
+:root[data-theme='dark'] .tab-count{background:#39264a;color:#dfbef4}
+:root[data-theme='dark'] .work-panel .product-list button,:root[data-theme='dark'] .work-panel .sales-product-grid .sales-product-card,:root[data-theme='dark'] .menu-admin-card{background:var(--surface);border-color:var(--line);box-shadow:none;color:var(--ink)}
+:root[data-theme='dark'] .work-panel .product-list button:hover,:root[data-theme='dark'] .work-panel .sales-product-grid .sales-product-card:hover{background:#282031;border-color:#72538a}
+:root[data-theme='dark'] .sales-product-details .product-name,:root[data-theme='dark'] .sales-cart .cart-row>span,:root[data-theme='dark'] .sales-cart-empty strong,:root[data-theme='dark'] .menu-admin-info h3,:root[data-theme='dark'] .product-photo-field>span{color:var(--ink)}
+:root[data-theme='dark'] .sales-product-bottom strong,:root[data-theme='dark'] .menu-admin-info strong,:root[data-theme='dark'] .ticket-list>div strong{color:#d2a6ed!important}
+:root[data-theme='dark'] .sales-product-bottom>span,:root[data-theme='dark'] .sales-cart-empty>span{background:#392648;color:#d2a6ed}
+:root[data-theme='dark'] .sales-cart .cart-total strong{color:#e2b8f8}
+:root[data-theme='dark'] .cart-total,:root[data-theme='dark'] .metric-grid strong,:root[data-theme='dark'] .overview-line strong{color:var(--ink)}
+:root[data-theme='dark'] .menu-admin-info>span,:root[data-theme='dark'] .sales-product-category,:root[data-theme='dark'] .sales-eyebrow{color:#caa0e6}
+:root[data-theme='dark'] .menu-admin-info p,:root[data-theme='dark'] .sales-product-details .product-name small,:root[data-theme='dark'] .sales-cart .cart-row small{color:var(--muted)}
+:root[data-theme='dark'] .menu-admin-empty,:root[data-theme='dark'] .product-editor .product-photo-field{background:var(--surface);border-color:var(--line);color:var(--muted)}
+:root[data-theme='dark'] .admin-table th{background:#292330;color:#c9b9d2}
+:root[data-theme='dark'] .admin-table td{background:var(--surface);color:var(--ink)}
+:root[data-theme='dark'] .admin-table tbody tr:hover td{background:#292330}
+:root[data-theme='dark'] .admin-table th,:root[data-theme='dark'] .admin-table td,:root[data-theme='dark'] .overview-line,:root[data-theme='dark'] .sales-chart,:root[data-theme='dark'] .ticket-list>div,:root[data-theme='dark'] .sales-cart-heading,:root[data-theme='dark'] .sales-cart .cart-row,:root[data-theme='dark'] .sales-cart .cart-total{border-color:var(--line)}
+:root[data-theme='dark'] .auth-card{background:var(--surface);border-color:var(--line);box-shadow:0 20px 60px #0004}
+:root[data-theme='dark'] .auth-card h2{color:var(--ink)}
+:root[data-theme='dark'] .auth-theme-toggle{background:#241d2c;border-color:#493653;color:#e8d9f1}
+:root[data-theme='dark'] .auth-theme-toggle:hover{background:#342341}
+:root[data-theme='dark'] .auth-intro,:root[data-theme='dark'] .auth-card p{color:var(--muted)}
+:root[data-theme='dark'] .work-panel .notice{background:#332619;border-color:#73532e;color:#f3cb9a}
+:root[data-theme='dark'] .work-panel .delete-product{background:#3b2225;color:#ffbab4;border-color:#8a4547}
+:root[data-theme='dark'] .work-panel .delete-product:hover:not(:disabled){background:#512b2f}
+:root[data-theme='dark'] .cash-status,:root[data-theme='dark'] .state-open{background:#1c3529;color:#abdfbd}
+:root[data-theme='dark'] .state-closed{background:#39301c;color:#e8d09a}

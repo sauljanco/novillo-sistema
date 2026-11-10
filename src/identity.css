@@ -36,14 +36,21 @@ h1, h2, h3 { font-family: Manrope, system-ui, sans-serif; }
 .app-sidebar .panel-nav button.selected { background: var(--brand-primary); color: #fff; box-shadow: none; }
 .nav-caption { color: #9b90a5; }
 .nav-icon { color: #b5a7c2; }
+.nav-icon svg { display: block; width: 18px; height: 18px; }
 .selected .nav-icon { color: #fff; }
 .side-profile { border-color: #302839; }
 .side-profile small { color: #a99eaf; }
 .profile-avatar { background: #3b284e; color: #f4e9fb; }
 .app-main { background: var(--canvas); }
 .app-topbar { background: var(--surface); border-color: var(--line); color: var(--muted); }
+.topbar-breadcrumb { font-size: 12px; font-weight: 600; }
+.topbar-account { color: var(--muted); font-size: 12px; font-weight: 700; }
+.topbar-right { gap: 9px; }
 .topbar-right button { border-color: var(--line); background: #fff; color: var(--brand-primary); }
 .topbar-right button:hover { background: var(--surface-selected); }
+.topbar-right .theme-toggle { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; }
+.topbar-right .logout-button { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 12px; }
+.topbar-right .logout-button svg { width: 15px; height: 15px; }
 .work-panel { padding-top: 43px; }
 .work-header { margin-bottom: 29px; }
 .work-header .section-kicker { color: var(--brand-red); font-size: 10px; letter-spacing: .14em; }
@@ -131,6 +138,10 @@ h1, h2, h3 { font-family: Manrope, system-ui, sans-serif; }
 .form-help a { color: var(--brand-red); }
 
 .auth-screen { background: var(--canvas); }
+.auth-screen { position: relative; }
+.auth-theme-toggle { position: absolute; top: 22px; right: 22px; display: grid; place-items: center; width: 39px; height: 39px; padding: 0; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); color: var(--brand-primary); cursor: pointer; }
+.auth-theme-toggle:hover { background: var(--surface-selected); }
+.auth-theme-toggle:focus-visible { outline: 2px solid var(--brand-vibrant); outline-offset: 2px; }
 .auth-card { border-color: var(--line); background: var(--surface); box-shadow: 0 16px 48px #2d15360e; }
 .auth-intro, .auth-card p, .auth-card label { color: var(--muted); }
 .auth-card input { border-color: var(--line); color: var(--ink); }
@@ -172,4 +183,7 @@ h1, h2, h3 { font-family: Manrope, system-ui, sans-serif; }
   .editor-stage .editor-form { grid-template-columns: 1fr; padding: 20px; }
   .editor-form h3, .editor-form .form-help, .editor-form .form-actions { grid-column: auto; }
   .form-actions { flex-wrap: wrap; }
+  .topbar-account { display: none; }
+  .topbar-right .logout-button { width: 36px; justify-content: center; padding: 0; }
+  .topbar-right .logout-button span { display: none; }
 }

@@ -1,34 +1,36 @@
-.guest-display{--gold:#f4b45b;--cream:#fff7ee;position:relative;isolation:isolate;min-height:100vh;overflow:hidden;background:#120e0c;color:var(--cream);font-family:Manrope,system-ui,sans-serif}
-.guest-atmosphere{position:absolute;z-index:-1;inset:0;background:radial-gradient(circle at 19% 47%,#702c1b60,transparent 37%),radial-gradient(circle at 91% 4%,#a93a1b2c,transparent 32%),#120e0c}
-.guest-header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:25px clamp(24px,4vw,70px);border-bottom:1px solid #ffffff1b}.guest-brand{display:flex;align-items:center;gap:12px}.guest-brand .novillo-logo{width:61px;height:61px}.guest-brand strong{display:block;font-size:21px;font-weight:800;letter-spacing:.14em;line-height:1}.guest-brand span{display:block;margin-top:8px;color:#bc9d84;font-size:9px;font-weight:800;letter-spacing:.16em}.guest-header-right{display:flex;align-items:center;gap:30px;color:#bda997;font-size:10px;font-weight:800;letter-spacing:.14em}.guest-header-right time{font-size:20px;color:var(--cream);letter-spacing:0;font-variant-numeric:tabular-nums}
-.guest-body{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(390px,.92fr);min-height:calc(100vh - 112px)}.guest-story{position:relative;display:flex;flex-direction:column;justify-content:space-between;min-height:650px;overflow:hidden;padding:clamp(44px,6vw,105px) clamp(30px,5vw,90px) 30px;border-right:1px solid #ffffff20}.guest-story-copy{position:relative;z-index:1}.guest-kicker{display:inline-flex;align-items:center;gap:11px;color:var(--gold);font-size:10px;font-weight:800;letter-spacing:.2em}.guest-kicker i{width:28px;height:1px;background:var(--gold)}.guest-story h1{margin:30px 0 21px;font-family:'DM Serif Display',Georgia,serif;font-size:clamp(64px,6vw,112px);line-height:.99;font-weight:400;letter-spacing:-.055em}.guest-story h1 em{color:var(--gold);font-weight:400}.guest-story p{max-width:540px;color:#d0b8a6;font-size:16px;line-height:1.8}.guest-hero-art{position:absolute;right:2%;bottom:5%;width:min(45%,450px);aspect-ratio:1;display:grid;place-items:center;transform:rotate(-5deg)}.guest-hero-art img{position:relative;z-index:1;width:90%;height:80%;object-fit:contain;filter:drop-shadow(0 20px 35px #000a);border-radius:18px}.guest-hero-art:has(img:not(.novillo-logo)) img{height:85%;object-fit:cover}.guest-art-halo{position:absolute;width:100%;aspect-ratio:1;border:1px solid #e4703955;border-radius:50%;box-shadow:0 0 0 33px #e470390d,0 0 0 66px #e4703908;background:radial-gradient(circle,#ab3d1a44,transparent 70%)}.guest-hero-art span{position:absolute;bottom:-8%;font-size:9px;letter-spacing:.2em;color:#b78f70;font-weight:800;text-transform:uppercase}.guest-story-footer{position:relative;z-index:1;display:flex;justify-content:space-between;color:#b39275;font-size:9px;font-weight:800;letter-spacing:.2em}
-.guest-order{display:flex;flex-direction:column;padding:clamp(36px,4.5vw,78px) clamp(26px,4vw,70px) 26px;background:linear-gradient(155deg,#211813,#19120f 75%)}.guest-order-top{display:flex;justify-content:space-between;align-items:center;gap:14px;padding-bottom:27px;border-bottom:1px solid #ffffff22}.guest-order h2{margin:12px 0 0;font-family:'DM Serif Display',Georgia,serif;font-size:clamp(40px,3.5vw,58px);font-weight:400;line-height:1.1}.guest-status{display:inline-flex;align-items:center;gap:8px;flex:none;padding:9px 12px;border:1px solid #ffffff30;border-radius:30px;color:#c9b7a8;font-size:10px;font-weight:800}.guest-status i{width:7px;height:7px;border-radius:50%;background:#a89d92}.guest-status.in-progress{border-color:#bd704b77;color:#ffd5b5}.guest-status.in-progress i{background:#ffab64;box-shadow:0 0 0 4px #ffab6422;animation:guest-pulse 2s infinite}.guest-status.paid{border-color:#7fb09077;color:#bfe9c9}.guest-status.paid i{background:#75c494}
-.guest-order-list{flex:1;padding:10px 0 30px;max-height:calc(100vh - 345px);min-height:240px;overflow-y:auto;scrollbar-color:#6e4b34 transparent}.guest-item{display:flex;align-items:center;gap:15px;padding:15px 0;border-bottom:1px solid #ffffff18;animation:guest-enter .4s both}.guest-item-photo{width:64px;height:64px;flex:none;display:grid;place-items:center;overflow:hidden;border-radius:11px;background:linear-gradient(145deg,#6a2e1d,#331c15);color:var(--gold);font-size:25px}.guest-item-photo img{width:100%;height:100%;object-fit:cover}.guest-item-info{min-width:0;flex:1}.guest-item-info strong{display:block;font-size:14px}.guest-item-info span{display:block;margin-top:7px;color:#ae9888;font-size:11px}.guest-item b{color:#f7c081;font-size:13px;white-space:nowrap}.guest-empty{min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#bd9c85}.guest-empty>span{width:62px;height:62px;display:grid;place-items:center;margin-bottom:16px;border:1px solid #9d5236;border-radius:50%;color:var(--gold);font-size:26px}.guest-empty strong{color:#f8e4d2;font-family:'DM Serif Display',Georgia,serif;font-size:24px;font-weight:400}.guest-empty p{font-size:12px}
-.guest-total{margin-top:auto;padding:23px 25px;border:1px solid #b2783f77;border-radius:16px;background:linear-gradient(135deg,#49301e,#2d1e17);box-shadow:0 20px 45px #0003}.guest-total>div{display:flex;justify-content:space-between;align-items:end;gap:15px}.guest-total span{font-size:11px;font-weight:800;letter-spacing:.13em;color:#eac5a0}.guest-total strong{font-family:'DM Serif Display',Georgia,serif;font-size:clamp(35px,3.4vw,56px);font-weight:400;color:#ffcd86;line-height:1}.guest-total p{margin:12px 0 0;color:#c8a783;font-size:11px}.guest-order-footer{display:flex;justify-content:space-between;gap:12px;margin-top:28px;color:#977e6e;font-size:9px;font-weight:800;letter-spacing:.15em}
-@keyframes guest-pulse{50%{box-shadow:0 0 0 8px #ffab640b}}@keyframes guest-enter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-@media(max-width:1050px){.guest-body{grid-template-columns:1fr}.guest-story{min-height:460px;border-right:0;border-bottom:1px solid #ffffff20}.guest-hero-art{width:35%;right:9%;bottom:14%}.guest-order-list{max-height:none}.guest-order{min-height:530px}}@media(max-width:620px){.guest-header{padding:17px}.guest-brand .novillo-logo{width:45px;height:45px}.guest-brand strong{font-size:16px}.guest-brand span,.guest-header-right>span{display:none}.guest-story{min-height:445px;padding:42px 22px 25px}.guest-story h1{font-size:clamp(56px,12vw,76px)}.guest-story p{font-size:13px;max-width:75%}.guest-hero-art{width:47%;right:-2%;bottom:7%}.guest-order{padding:35px 20px 23px}.guest-order h2{font-size:39px}.guest-status{font-size:9px}.guest-item-photo{width:51px;height:51px}.guest-item-info strong{font-size:12px}.guest-item b{font-size:11px}.guest-total{padding:18px}.guest-total>div{align-items:start;flex-direction:column}.guest-total strong{font-size:42px}}@media(prefers-reduced-motion:reduce){.guest-status.in-progress i,.guest-item{animation:none}}
-
-/* The customer display keeps its theater-like dark surface with restrained brand accents. */
-.guest-display{--gold:#c98938;--cream:#fff;--guest-purple:#bf9adf;background:#0d0b11}
-.guest-atmosphere{background:#0d0b11}
-.guest-header{border-color:#ffffff19}
-.guest-brand span,.guest-header-right,.guest-story-footer,.guest-order-footer{color:#b2a5bd}
-.guest-kicker,.guest-story h1 em{color:var(--guest-purple)}
-.guest-kicker i{background:var(--guest-purple)}
-.guest-story{border-color:#ffffff1a}
-.guest-story p,.guest-item-info span,.guest-empty p{color:#c2b6cb}
-.guest-hero-art{transform:none}
-.guest-hero-art img{filter:none}
-.guest-art-halo{border-color:#8152a455;box-shadow:none;background:transparent}
-.guest-hero-art span{color:#b8a5c6}
-.guest-order{background:#18141d}
-.guest-status.in-progress{border-color:#8f61ae;color:#dfc4f4}
-.guest-status.in-progress i{background:#a46bc9;box-shadow:none}
-.guest-status.in-progress i,.guest-item{animation:none}
-.guest-item-photo{background:#291b34;color:var(--guest-purple)}
-.guest-item b{color:#ddc5ef}
-.guest-empty>span{border-color:#76508e;color:var(--guest-purple)}
-.guest-empty strong{color:#fff}
-.guest-total{border-color:#624278;background:#241a2b;box-shadow:none}
-.guest-total span,.guest-total p{color:#c6b1d5}
-.guest-total strong{color:#fff;font-family:Manrope,system-ui,sans-serif;font-weight:700}
+.guest-display{display:grid;grid-template-columns:40% 60%;width:100%;height:100dvh;min-height:0;overflow:hidden;background:#0d0b11;color:#f4eff7;font-family:Manrope,system-ui,sans-serif}
+.guest-brand-stage{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:space-between;min-width:0;min-height:0;padding:clamp(22px,3vw,48px);border-right:1px solid #342b3b;background:#0d0b11}
+.guest-wordmark{align-self:flex-start;color:#d8cddd;font-size:clamp(10px,.9vw,15px);font-weight:800;letter-spacing:.22em;white-space:nowrap}
+.guest-wordmark span{color:#ab7dcc}
+.guest-logo-frame{display:grid;place-items:center;width:min(68%,360px);max-height:58vh;aspect-ratio:1;border:1px solid #3b2d46;border-radius:50%;background:#151019}
+.guest-logo-frame .novillo-logo{display:block;width:78%;height:78%;max-height:100%;object-fit:contain}
+.guest-brand-caption{align-self:flex-start;color:#a894b5;font-size:clamp(9px,.8vw,12px);font-weight:700;letter-spacing:.24em;white-space:nowrap}
+.guest-order{display:flex;flex-direction:column;min-width:0;min-height:0;padding:clamp(22px,3vw,48px) clamp(25px,4vw,70px);background:#18141d}
+.guest-order-heading{display:flex;align-items:end;justify-content:space-between;gap:20px;flex:none;padding-bottom:clamp(18px,2vw,32px);border-bottom:1px solid #3a3042}
+.guest-eyebrow{color:#bd92d8;font-size:clamp(10px,.8vw,12px);font-weight:800;letter-spacing:.18em}
+.guest-order h1{margin:10px 0 0;color:#f4eff7;font-family:Manrope,system-ui,sans-serif;font-size:clamp(34px,4.4vw,76px);font-weight:700;line-height:1.05;letter-spacing:-.055em}
+.guest-status{display:inline-flex;align-items:center;gap:9px;flex:none;padding:9px 13px;border:1px solid #52475a;border-radius:99px;color:#c6bacd;font-size:clamp(10px,.85vw,13px);font-weight:700;white-space:nowrap}
+.guest-status i{width:8px;height:8px;border-radius:50%;background:#b5a5be}
+.guest-status.in-progress{color:#e7c496;border-color:#8c6740}
+.guest-status.in-progress i{background:#fe8802}
+.guest-status.paid{color:#b6dfbe;border-color:#52765b}
+.guest-status.paid i{background:#71bd82}
+.guest-order-list{display:flex;flex:1;min-height:0;flex-direction:column;justify-content:center;overflow:hidden;padding:clamp(8px,1.2vw,18px) 0}
+.guest-item{display:flex;align-items:center;gap:clamp(12px,1.5vw,22px);min-height:0;flex:0 1 auto;padding:clamp(8px,1.15vh,15px) 0;border-bottom:1px solid #342b3b}
+.guest-item-photo{display:grid;place-items:center;flex:none;width:clamp(44px,6.3vh,76px);height:clamp(44px,6.3vh,76px);overflow:hidden;border-radius:10px;background:#291c34;color:#bd92d8;font-size:26px}
+.guest-item-photo img{width:100%;height:100%;object-fit:cover}
+.guest-item-info{flex:1;min-width:0}
+.guest-item-info strong{display:block;overflow:hidden;color:#f3edf7;font-size:clamp(13px,1.25vw,20px);font-weight:700;text-overflow:ellipsis;white-space:nowrap}
+.guest-item-info span{display:block;margin-top:5px;color:#b6a9bf;font-size:clamp(10px,.85vw,13px)}
+.guest-item b{flex:none;color:#f1e9f6;font-size:clamp(13px,1.2vw,19px);font-weight:700;white-space:nowrap}
+.guest-more{padding:13px 0;color:#bb9dce;font-size:13px;font-weight:700}
+.guest-empty{display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center}
+.guest-empty span{display:grid;place-items:center;width:84px;height:84px;border:1px solid #614675;border-radius:50%;color:#c39bdc;font-size:37px}
+.guest-empty strong{color:#e6dbea;font-size:clamp(17px,1.7vw,27px);font-weight:600}
+.guest-total{display:flex;align-items:end;justify-content:space-between;gap:18px;flex:none;padding:clamp(21px,2.6vw,38px) 0 0;border-top:1px solid #5d4170}
+.guest-total span{display:block;margin-bottom:8px;color:#c29bda;font-size:clamp(10px,.85vw,13px);font-weight:800;letter-spacing:.16em}
+.guest-total strong{display:block;color:#f7f1fa;font-size:clamp(36px,4.4vw,70px);font-weight:800;line-height:1;letter-spacing:-.05em;white-space:nowrap}
+.guest-total small{padding-bottom:5px;color:#b7a9c1;font-size:clamp(10px,.9vw,14px);white-space:nowrap}
+@media(max-width:900px){.guest-brand-stage{padding:24px}.guest-order{padding:28px}.guest-logo-frame{width:78%}.guest-order h1{font-size:clamp(34px,4.8vw,54px)}}
+@media(max-width:640px){.guest-display{grid-template-columns:1fr;grid-template-rows:27% 73%}.guest-brand-stage{padding:13px 20px;flex-direction:row;justify-content:space-between;border-right:0;border-bottom:1px solid #342b3b}.guest-wordmark{font-size:11px}.guest-logo-frame{width:auto;height:90%;max-height:none;aspect-ratio:1}.guest-logo-frame .novillo-logo{width:82%;height:82%}.guest-brand-caption{display:none}.guest-order{padding:18px 20px 22px}.guest-order-heading{padding-bottom:15px}.guest-order h1{font-size:clamp(30px,9vw,42px)}.guest-status{padding:7px 10px}.guest-item{padding:7px 0}.guest-item-photo{width:42px;height:42px}.guest-item-info strong{font-size:13px}.guest-item-info span{font-size:10px}.guest-item b{font-size:12px}.guest-empty span{width:64px;height:64px}.guest-total{padding-top:16px}.guest-total strong{font-size:clamp(34px,10vw,48px)}}
+@media(max-height:600px) and (min-width:641px){.guest-brand-stage,.guest-order{padding-top:18px;padding-bottom:18px}.guest-order-heading{padding-bottom:12px}.guest-order h1{font-size:clamp(32px,4vw,52px)}.guest-item{padding:5px 0}.guest-item-photo{width:42px;height:42px}.guest-total{padding-top:13px}.guest-total strong{font-size:clamp(32px,4vw,52px)}}

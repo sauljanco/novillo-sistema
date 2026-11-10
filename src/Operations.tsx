@@ -1,17 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import { authorizedFetch, neonAuth } from './auth'
 import { AdminPanels, adminTabs } from './AdminPanels'
 import { BrandLogo } from './BrandLogo'
+import { PanelIcon, type IconName } from './PanelIcon'
 import './modern.css'
 import './identity.css'
 import './sales.css'
 import './sales-metrics.css'
+import './theme-dark.css'
 
 type Product = { id: string; category: string; name: string; presentation: string; price_cents: number; image_url: string | null }
 type Staff = { display_name: string; role: 'superadministrador' | 'administrador' | 'caja' | 'cocina' }
 type Cash = { id: string; opening_cash_cents: number; cash_sales_cents: number; qr_sales_cents: number }
 type Order = { id: string; ticket_number: number; total_cents: number; payment_method: string; status: string; items: { name: string; presentation: string; quantity: number }[] }
 const money = (cents: number) => `Bs ${(cents / 100).toFixed(2)}`
+const panelIcons: Record<string, IconName> = { personal: 'staff', inventario: 'inventory', compras: 'purchases', catalogo: 'menu', reportes: 'reports', accesos: 'access' }
 
 export function Operations() {
   if (!neonAuth) return <p role="alert">Falta configurar VITE_NEON_AUTH_URL.</p>
@@ -44,6 +47,13 @@ function OperationsWithAuth() {
   const [lastTicket, setLastTicket] = useState<number | null>(null)
   const [lastPaidTotal, setLastPaidTotal] = useState(0)
   const [lastPaidItems, setLastPaidItems] = useState<{ name: string; presentation: string; quantity: number; price_cents: number; image_url: string | null }[]>([])
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => localStorage.getItem('novillo-theme') === 'dark' ? 'dark' : 'light')
+
+  useLayoutEffect(() => {
+    document.documentElement.dataset.theme = theme
+    localStorage.setItem('novillo-theme', theme)
+  }, [theme])
+  const authThemeButton = <button type="button" className="auth-theme-toggle" aria-label={theme === 'light' ? 'Activar modo oscuro' : 'Activar modo claro'} title={theme === 'light' ? 'Modo oscuro' : 'Modo claro'} onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}><PanelIcon name={theme === 'light' ? 'moon' : 'sun'} /></button>
 
   async function refresh() {
     const meRes = await authorizedFetch('/api/me')
@@ -163,8 +173,8 @@ function OperationsWithAuth() {
     finally { setBusy(false) }
   }
 
-  if (session.isPending) return <section className="auth-screen"><div className="auth-card"><p>Comprobando sesión…</p></div></section>
-  if (!session.data?.user) return <section className="auth-screen"><div className="auth-card"><div className="auth-brand"><BrandLogo /><span>NOVILLO</span></div><span className="section-kicker">SISTEMA DE GESTIÓN</span><h2>Bienvenido de nuevo</h2><p className="auth-intro">Ingresa para continuar con la operación del restaurante.</p>
+  if (session.isPending) return <section className="auth-screen">{authThemeButton}<div className="auth-card"><p>Comprobando sesión…</p></div></section>
+  if (!session.data?.user) return <section className="auth-screen">{authThemeButton}<div className="auth-card"><div className="auth-brand"><BrandLogo /><span>NOVILLO</span></div><span className="section-kicker">SISTEMA DE GESTIÓN</span><h2>Bienvenido de nuevo</h2><p className="auth-intro">Ingresa para continuar con la operación del restaurante.</p>
     <form onSubmit={login} className="auth-form">
       {mode === 'sign-up' && <label>Nombre<input required value={name} onChange={(e) => setName(e.target.value)} /></label>}
       <label>Correo<input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
@@ -179,25 +189,25 @@ function OperationsWithAuth() {
     {message && <p role="alert">{message}</p>}
   </div></section>
 
-  if (session.data.user.emailVerified === false) return <section className="auth-screen"><div className="auth-card"><h2>Verifica tu correo</h2><p>La cuenta necesita un código enviado a {session.data.user.email}.</p>
+  if (session.data.user.emailVerified === false) return <section className="auth-screen">{authThemeButton}<div className="auth-card"><h2>Verifica tu correo</h2><p>La cuenta necesita un código enviado a {session.data.user.email}.</p>
     <form className="auth-form" onSubmit={async (event) => { event.preventDefault(); setBusy(true); const result = await neonAuth!.emailOtp.verifyEmail({ email: session.data!.user.email, otp }); setMessage(result.error ? (result.error.message ?? 'Código inválido') : 'Correo verificado. Actualizando sesión…'); setBusy(false); if (!result.error) location.reload() }}>
       <label>Código de verificación<input required inputMode="numeric" autoComplete="one-time-code" value={otp} onChange={(e) => setOtp(e.target.value)} /></label><button disabled={busy}>Verificar correo</button>
     </form><button className="text-button" onClick={async () => { const result = await neonAuth!.emailOtp.sendVerificationOtp({ email: session.data!.user.email, type: 'email-verification' }); setMessage(result.error ? (result.error.message ?? 'No se pudo enviar') : 'Código enviado.') }}>Enviar código</button>{message && <p role="status">{message}</p>}
   </div></section>
 
-  if (!staff) return <section className="auth-screen"><div className="auth-card"><h2>Acceso pendiente</h2><p>{message || 'Comprobando tu autorización…'}</p><button onClick={() => refresh().catch((error) => setMessage(error instanceof Error ? error.message : 'No se pudo validar la sesión.'))}>Reintentar</button> <button onClick={() => neonAuth!.signOut()}>Salir</button></div></section>
+  if (!staff) return <section className="auth-screen">{authThemeButton}<div className="auth-card"><h2>Acceso pendiente</h2><p>{message || 'Comprobando tu autorización…'}</p><button onClick={() => refresh().catch((error) => setMessage(error instanceof Error ? error.message : 'No se pudo validar la sesión.'))}>Reintentar</button> <button onClick={() => neonAuth!.signOut()}>Salir</button></div></section>
 
   const isAdmin = staff.role === 'superadministrador' || staff.role === 'administrador'
   const navigation = <nav className="panel-nav" aria-label="Paneles del sistema">
     {isAdmin && <span className="nav-caption">GENERAL</span>}
-    {isAdmin && <button className={panel === 'resumen' ? 'selected' : ''} onClick={() => setPanel('resumen')}><span className="nav-icon">◫</span>Resumen</button>}
-    <button className={panel === 'operacion' ? 'selected' : ''} onClick={() => setPanel('operacion')}><span className="nav-icon">▣</span>{staff.role === 'cocina' ? 'Cocina' : 'Ventas'}</button>
+    {isAdmin && <button className={panel === 'resumen' ? 'selected' : ''} onClick={() => setPanel('resumen')}><span className="nav-icon"><PanelIcon name="overview" /></span>Resumen</button>}
+    <button className={panel === 'operacion' ? 'selected' : ''} onClick={() => setPanel('operacion')}><span className="nav-icon"><PanelIcon name="sales" /></span>{staff.role === 'cocina' ? 'Cocina' : 'Ventas'}</button>
     {isAdmin && <span className="nav-caption nav-caption-second">ADMINISTRACIÓN</span>}
-    {isAdmin && adminTabs.filter(([key]) => key !== 'resumen' && (key !== 'accesos' || staff.role === 'superadministrador')).map(([key, label], index) =>
-      <button key={key} className={panel === key ? 'selected' : ''} onClick={() => setPanel(key)}><span className="nav-icon">{['♙','▤','◈','▦','▥','♧'][index]}</span>{label}</button>)}
+    {isAdmin && adminTabs.filter(([key]) => key !== 'resumen' && (key !== 'accesos' || staff.role === 'superadministrador')).map(([key, label]) =>
+      <button key={key} className={panel === key ? 'selected' : ''} onClick={() => setPanel(key)}><span className="nav-icon"><PanelIcon name={panelIcons[key]} /></span>{label}</button>)}
   </nav>
 
-  const shell = (content: React.ReactNode, title: string, subtitle: string) => <div className="app-shell"><aside className="app-sidebar"><a className="side-brand" href="/"><BrandLogo /><span>NOVILLO</span></a>{navigation}<div className="side-profile"><span className="profile-avatar">{staff.display_name.slice(0, 2).toUpperCase()}</span><span><strong>{staff.display_name}</strong><small>{staff.role === 'superadministrador' ? 'Superadministrador' : staff.role === 'caja' ? 'Caja y ventas' : staff.role}</small></span></div></aside><div className="app-main"><header className="app-topbar"><span>Panel <span className="crumb-separator">/</span> {title}</span><div className="topbar-right"><span className="topbar-date">{new Date().toLocaleDateString('es-BO', { timeZone: 'America/La_Paz', day: 'numeric', month: 'short', year: 'numeric' })}</span><button onClick={() => neonAuth!.signOut()}>Salir</button></div></header><main className="work-panel"><div className="work-header"><div><span className="section-kicker">NOVILLO · SACABA</span><h1>{title}</h1><p>{subtitle}</p></div>{panel === 'operacion' && cash && <span className="cash-status">● Caja abierta · #{cash.id}</span>}</div>{content}</main></div></div>
+  const shell = (content: React.ReactNode, title: string, subtitle: string) => <div className="app-shell"><aside className="app-sidebar"><a className="side-brand" href="/"><BrandLogo /><span>NOVILLO</span></a>{navigation}<div className="side-profile"><span className="profile-avatar">{staff.display_name.slice(0, 2).toUpperCase()}</span><span><strong>{staff.display_name}</strong><small>{staff.role === 'superadministrador' ? 'Superadministrador' : staff.role === 'caja' ? 'Caja y ventas' : staff.role}</small></span></div></aside><div className="app-main"><header className="app-topbar"><span className="topbar-breadcrumb">Panel <span className="crumb-separator">/</span> {title}</span><div className="topbar-right"><span className="topbar-account">{staff.display_name}</span><button className="theme-toggle" aria-label={theme === 'light' ? 'Activar modo oscuro' : 'Activar modo claro'} title={theme === 'light' ? 'Modo oscuro' : 'Modo claro'} onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}><PanelIcon name={theme === 'light' ? 'moon' : 'sun'} /></button><button className="logout-button" onClick={() => neonAuth!.signOut()}><PanelIcon name="logout" /> <span>Salir</span></button></div></header><main className="work-panel"><div className="work-header"><div><span className="section-kicker">NOVILLO · SACABA</span><h1>{title}</h1><p>{subtitle}</p></div>{panel === 'operacion' && cash && <span className="cash-status">● Caja abierta · #{cash.id}</span>}</div>{content}</main></div></div>
 
   const panelDescriptions: Record<string, string> = { resumen: 'Control y seguimiento del restaurante en un solo lugar.', personal: 'Organiza turnos, asistencia y pagos de tu equipo.', inventario: 'Consulta existencias y registra movimientos de productos.', compras: 'Gestiona proveedores, compras e inversiones.', catalogo: 'Productos, precios y disponibilidad del menú.', reportes: 'Analiza ventas, caja y gastos del restaurante.', accesos: 'Administra invitaciones, usuarios y permisos.' }
   if (panel !== 'operacion' && isAdmin) return shell(<AdminPanels panel={panel} isSuper={staff.role === 'superadministrador'} />, adminTabs.find(([key]) => key === panel)?.[1] || 'Gestión', panelDescriptions[panel] || 'Control del restaurante.')
