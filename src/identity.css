@@ -30,6 +30,8 @@ h1, h2, h3 { font-family: Manrope, system-ui, sans-serif; }
 .side-brand { gap: 10px; padding-bottom: 29px; font-size: 17px; letter-spacing: .095em; }
 .side-brand .novillo-logo { width: 58px; height: 58px; }
 .app-sidebar .panel-nav button { color: #d6cedd; font-size: 12.5px; letter-spacing: .01em; }
+.app-sidebar .panel-nav { scrollbar-width: none; }
+.app-sidebar .panel-nav::-webkit-scrollbar { display: none; }
 .app-sidebar .panel-nav button:hover { background: #21172b; color: #fff; }
 .app-sidebar .panel-nav button.selected { background: var(--brand-primary); color: #fff; box-shadow: none; }
 .nav-caption { color: #9b90a5; }

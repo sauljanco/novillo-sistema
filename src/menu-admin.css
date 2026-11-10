@@ -2,8 +2,11 @@
 
 .menu-admin-card{border-color:var(--line);border-radius:12px;box-shadow:0 3px 14px #2d153608}
 .menu-admin-image,.product-photo-preview{background:var(--surface-dark);color:var(--brand-gold)}
+.menu-admin-image{position:relative;overflow:hidden}
+.menu-admin-image img{position:absolute;inset:0;display:block}
 .menu-admin-info>span,.menu-admin-info strong{color:var(--brand-primary)}
 .menu-admin-info h3,.product-photo-field>span{color:var(--ink)}
+.work-panel .menu-admin-info h3{margin:7px 0 4px}
 .menu-admin-info p,.product-photo-field small,.menu-admin-empty{color:var(--muted)}
 .menu-admin-empty,.product-editor .product-photo-field{border-color:var(--line)}
 .product-editor .product-photo-field{background:#fbf9fd}
