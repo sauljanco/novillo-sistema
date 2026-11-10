@@ -25,13 +25,11 @@ export function CustomerScreen() {
 
   return <main className="guest-display">
     <section className="guest-brand-stage" aria-label="Novillo">
-      <div className="guest-wordmark">NOVILLO <span>·</span> SACABA</div>
       <div className="guest-logo-frame"><BrandLogo /></div>
-      <div className="guest-brand-caption">CARNES A LA PARRILLA</div>
     </section>
     <section className="guest-order" aria-live="polite">
       <header className="guest-order-heading">
-        <div><span className="guest-eyebrow">NOVILLO · TU PEDIDO</span><h1>{paid ? `Ficha ${display.ticket_number}` : 'Tu pedido'}</h1></div>
+        <h1>{paid ? `Ficha ${display.ticket_number}` : 'Tu pedido'}</h1>
         <span className={`guest-status ${paid ? 'paid' : hasItems ? 'in-progress' : ''}`}><i />{paid ? 'Pagado' : hasItems ? 'Por cobrar' : 'En espera'}</span>
       </header>
       <div className="guest-order-list">

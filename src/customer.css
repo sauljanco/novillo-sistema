@@ -34,3 +34,23 @@
 @media(max-width:900px){.guest-brand-stage{padding:24px}.guest-order{padding:28px}.guest-logo-frame{width:78%}.guest-order h1{font-size:clamp(34px,4.8vw,54px)}}
 @media(max-width:640px){.guest-display{grid-template-columns:1fr;grid-template-rows:27% 73%}.guest-brand-stage{padding:13px 20px;flex-direction:row;justify-content:space-between;border-right:0;border-bottom:1px solid #342b3b}.guest-wordmark{font-size:11px}.guest-logo-frame{width:auto;height:90%;max-height:none;aspect-ratio:1}.guest-logo-frame .novillo-logo{width:82%;height:82%}.guest-brand-caption{display:none}.guest-order{padding:18px 20px 22px}.guest-order-heading{padding-bottom:15px}.guest-order h1{font-size:clamp(30px,9vw,42px)}.guest-status{padding:7px 10px}.guest-item{padding:7px 0}.guest-item-photo{width:42px;height:42px}.guest-item-info strong{font-size:13px}.guest-item-info span{font-size:10px}.guest-item b{font-size:12px}.guest-empty span{width:64px;height:64px}.guest-total{padding-top:16px}.guest-total strong{font-size:clamp(34px,10vw,48px)}}
 @media(max-height:600px) and (min-width:641px){.guest-brand-stage,.guest-order{padding-top:18px;padding-bottom:18px}.guest-order-heading{padding-bottom:12px}.guest-order h1{font-size:clamp(32px,4vw,52px)}.guest-item{padding:5px 0}.guest-item-photo{width:42px;height:42px}.guest-total{padding-top:13px}.guest-total strong{font-size:clamp(32px,4vw,52px)}}
+
+/* Rich black and saturated amethyst keep the order and amount in focus. */
+.guest-display{background:#050209;color:#fff}
+.guest-brand-stage{justify-content:center;border-right-color:#642480;background:radial-gradient(circle at 51% 48%,#39104f 0,#16071f 39%,#030106 78%)}
+.guest-logo-frame{width:min(72%,400px);border:1px solid #8c2aba;background:radial-gradient(circle at 50% 45%,#260b35,#08030d 76%);box-shadow:0 0 0 11px #7c19af12,0 0 70px #8b12d04d,inset 0 0 35px #7910b02e}
+.guest-order{padding:clamp(18px,2.2vw,35px) clamp(24px,3.2vw,55px);background:radial-gradient(circle at 96% 8%,#280b39 0,#100619 28%,#08040e 70%)}
+.guest-order-heading{align-items:center;padding-bottom:clamp(12px,1.3vw,21px);border-bottom-color:#74309b}
+.guest-order h1{margin:0;color:#fff;font-size:clamp(32px,3.5vw,59px);font-weight:800}
+.guest-status{border-color:#693887;background:#2b103e;color:#f1dcfb}
+.guest-item{border-bottom-color:#482059}
+.guest-item-photo{background:#38134d;color:#e7b7ff}
+.guest-item-info strong,.guest-item b{color:#fff}
+.guest-item-info span{color:#c7b3d1}
+.guest-total{margin:0 -10px;padding:clamp(16px,1.8vw,28px) 20px;border:1px solid #a53be0;border-radius:18px;background:linear-gradient(120deg,#57058c,#8500c9 72%,#7002b5);box-shadow:0 14px 42px #7300b955,inset 0 1px #d985ff75}
+.guest-total span,.guest-total small{color:#f2dafd}
+.guest-total strong{color:#fff}
+.guest-empty span{border-color:#9b3ad0;color:#e5a5ff}
+.guest-empty strong{color:#fff}
+@media(max-width:900px){.guest-logo-frame{width:min(78%,400px)}}
+@media(max-width:640px){.guest-brand-stage{justify-content:center;border-bottom-color:#642480}.guest-logo-frame{width:auto;height:85%;max-height:none}.guest-order{padding:16px 18px 20px}.guest-order-heading{padding-bottom:12px}.guest-order h1{font-size:clamp(28px,8vw,40px)}.guest-total{margin:0 -5px;padding:15px 16px}}

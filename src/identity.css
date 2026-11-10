@@ -42,16 +42,18 @@ h1, h2, h3 { font-family: Manrope, system-ui, sans-serif; }
 .side-profile small { color: #a99eaf; }
 .profile-avatar { background: #3b284e; color: #f4e9fb; }
 .app-main { background: var(--canvas); }
-.app-topbar { background: var(--surface); border-color: var(--line); color: var(--muted); }
+.app-topbar { position: sticky; top: 0; z-index: 5; height: 64px; padding: 0 clamp(16px,2vw,36px); background: #270d3d; border-color: #603282; color: #f7effb; box-shadow: 0 5px 18px #1b0a281c; }
+.topbar-title { min-width: 0; overflow: hidden; margin: 0; color: #fff; font-size: clamp(17px,1.4vw,21px); font-weight: 800; letter-spacing: -.035em; text-overflow: ellipsis; white-space: nowrap; }
 .topbar-breadcrumb { font-size: 12px; font-weight: 600; }
 .topbar-account { color: var(--muted); font-size: 12px; font-weight: 700; }
 .topbar-right { gap: 9px; }
-.topbar-right button { border-color: var(--line); background: #fff; color: var(--brand-primary); }
-.topbar-right button:hover { background: var(--surface-selected); }
+.topbar-right button { border-color: #70438c; background: #3b1a56; color: #f5eafa; }
+.topbar-right button:hover { background: #562477; }
+.topbar-right .cash-status { margin-right: 8px; padding: 7px 11px; background: #163b2b; color: #c8f1d7; }
 .topbar-right .theme-toggle { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; }
 .topbar-right .logout-button { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 12px; }
 .topbar-right .logout-button svg { width: 15px; height: 15px; }
-.work-panel { padding-top: 43px; }
+.work-panel { max-width: none; padding: 22px clamp(16px,2vw,36px) 60px; }
 .work-header { margin-bottom: 29px; }
 .work-header .section-kicker { color: var(--brand-red); font-size: 10px; letter-spacing: .14em; }
 .work-header h1 { font-size: clamp(28px, 2.4vw, 37px); letter-spacing: -.04em; font-weight: 700; color: var(--ink); }

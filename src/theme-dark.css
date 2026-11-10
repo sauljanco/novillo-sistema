@@ -6,9 +6,9 @@
 }
 :root[data-theme='dark'] .app-main,:root[data-theme='dark'] .work-panel,:root[data-theme='dark'] .auth-screen{background:var(--canvas);color:var(--ink)}
 :root[data-theme='dark'] .app-sidebar{background:#0d0b11;border-right:1px solid #302739}
-:root[data-theme='dark'] .app-topbar{background:#18141d;border-color:var(--line);color:var(--muted)}
-:root[data-theme='dark'] .topbar-right button{background:#241d2c;border-color:#493653;color:#e8d9f1}
-:root[data-theme='dark'] .topbar-right button:hover{background:#342341}
+:root[data-theme='dark'] .app-topbar{background:#200a35;border-color:#5b2b79;color:#f7effb}
+:root[data-theme='dark'] .topbar-right button{background:#381750;border-color:#70438c;color:#f5eafa}
+:root[data-theme='dark'] .topbar-right button:hover{background:#562477}
 :root[data-theme='dark'] .work-header h1,:root[data-theme='dark'] .work-panel h2,:root[data-theme='dark'] .work-panel h3,:root[data-theme='dark'] .editor-heading h2{color:var(--ink)}
 :root[data-theme='dark'] .work-header .section-kicker,:root[data-theme='dark'] .work-panel .panel-sections button.active,:root[data-theme='dark'] .work-panel .back-button,:root[data-theme='dark'] .work-panel .text-button,:root[data-theme='dark'] .auth-card .section-kicker,:root[data-theme='dark'] .auth-card .text-button{color:#d4acee}
 :root[data-theme='dark'] .work-panel .panel-sections button.active{border-bottom-color:#ae74d3}
