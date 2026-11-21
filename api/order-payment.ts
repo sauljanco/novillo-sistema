@@ -12,7 +12,7 @@ export async function POST(request: Request): Promise<Response> {
   }
   try {
     const rows = await access.sql`SELECT public.pay_order(${orderId},${sessionId},${access.staff.user_id},${method}) AS id`
-    const order = await access.sql`SELECT id,service_date,ticket_number,payment_method,paid_at,total_cents,status,created_at
+    const order = await access.sql`SELECT id,service_date,ticket_number,table_number,payment_method,paid_at,total_cents,status,created_at
       FROM public.orders WHERE id=${rows[0].id}`
     return Response.json({ order: order[0] }, { headers: { 'Cache-Control': 'no-store' } })
   } catch {

@@ -1,6 +1,6 @@
-# Novillo
+# Novillo Grill
 
-Sistema de gestión para el restaurante Novillo (Sacaba, Cochabamba).
+Sistema de gestión para el restaurante Novillo Grill (Sacaba, Cochabamba).
 
 - [Web publicada](https://novillo-sistema.vercel.app/)
 - [Proyecto en Vercel](https://vercel.com/fast-furious-delivery/novillo-sistema)
@@ -37,6 +37,8 @@ El despliegue de Vercel usa el directorio raíz, preset **Vite**, comando `npm r
 `POST /api/order-status` permite a cocina y administración avanzar una ficha por `pendiente → preparando → listo → entregado`. La lista se actualiza periódicamente mientras la ventana está visible.
 
 `db/migrations/0007_order_then_payment.sql` separa pedido y cobro; `0008_legacy_paid_order.sql` conserva la clasificación de pagos de la versión anterior. En Ventas, el personal registra productos y emite una ficha numerada sin cobrar. Cuando el cliente pide la cuenta, abre ese pedido, selecciona efectivo o QR y confirma el cobro con `POST /api/order-payment`. La ficha y el recibo imprimible comparten el mismo número. El cobro se bloquea si el pedido ya está pagado o anulado. Los arqueos suman únicamente pedidos cobrados en la sesión correspondiente. Las categorías Cócteles y Postres quedan disponibles para agregar productos; inicialmente están vacías.
+
+`db/migrations/0009_tables_and_cancellation.sql` agrega la mesa (1 a 12) al pedido y registra quién canceló una ficha pendiente. La mesa se elige al registrar el pedido y aparece en la ficha, la lista y el recibo. Ventas ofrece registrar, ver ficha o recibo, cobrar y cancelar pedidos sin pago; no requiere estados de preparación. Las fichas anteriores pueden carecer de número de mesa.
 
 La página `/?vista=operacion` es para el personal. El sitio público se muestra en la ruta principal.
 

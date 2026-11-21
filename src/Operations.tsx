@@ -14,14 +14,23 @@ import './sales-compact.css'
 type Product = { id: string; category: string; name: string; presentation: string; price_cents: number; image_url: string | null }
 type Staff = { display_name: string; role: 'superadministrador' | 'administrador' | 'caja' | 'cocina' }
 type Cash = { id: string; opening_cash_cents: number; cash_sales_cents: number; qr_sales_cents: number }
-type Order = { id: string; service_date: string; ticket_number: number; total_cents: number; payment_method: string | null; paid_at: string | null; created_at: string; status: string; items: { name: string; presentation: string; quantity: number; unit_price_cents: number; line_total_cents: number }[] }
+type Order = { id: string; service_date: string; ticket_number: number; table_number: number | null; total_cents: number; payment_method: string | null; paid_at: string | null; created_at: string; status: string; items: { name: string; presentation: string; quantity: number; unit_price_cents: number; line_total_cents: number }[] }
 const money = (cents: number) => `Bs ${(cents / 100).toFixed(2)}`
 function OrderDocument({ order, kind, onClose }: { order: Order; kind: 'ficha' | 'recibo'; onClose: () => void }) {
   const timestamp = kind === 'recibo' ? order.paid_at : order.created_at
   return <div className="document-overlay" role="dialog" aria-modal="true" aria-label={kind === 'ficha' ? 'Ficha de pedido' : 'Recibo de pago'}>
     <div className="document-preview">
       <div className="document-actions"><button type="button" className="secondary-utility" onClick={onClose}>Cerrar</button><button type="button" onClick={() => window.print()}>Imprimir {kind}</button></div>
-      <div className="order-document"><div className="document-brand">NOVILLO</div><div className="document-subtitle">{kind === 'ficha' ? 'FICHA DE PEDIDO' : 'RECIBO DE PAGO'}</div><strong className="document-number">Nº {order.ticket_number}</strong><p>{timestamp ? new Date(timestamp).toLocaleString('es-BO', { timeZone: 'America/La_Paz' }) : ''}</p><div className="document-lines">{order.items.map((item, index) => <div key={`${item.name}-${index}`}><span>{item.quantity} × {item.name}<small>{item.presentation}</small></span><strong>{money(item.line_total_cents)}</strong></div>)}</div><div className="document-total"><span>{kind === 'ficha' ? 'Total del pedido' : 'Total pagado'}</span><strong>{money(order.total_cents)}</strong></div><p>{kind === 'ficha' ? 'Pago pendiente · Conserva este número para solicitar la cuenta.' : `Pagado con ${order.payment_method === 'qr' ? 'QR' : 'efectivo'} · Gracias por tu visita.`}</p></div>
+      <div className="order-document">
+        <div className="document-brand">NOVILLO GRILL</div>
+        <div className="document-subtitle">{kind === 'ficha' ? 'FICHA DE PEDIDO' : 'RECIBO DE PAGO'}</div>
+        <strong className="document-number">Nº {order.ticket_number}</strong>
+        {order.table_number && <strong className="document-table">MESA {order.table_number}</strong>}
+        <p>{timestamp ? new Date(timestamp).toLocaleString('es-BO', { timeZone: 'America/La_Paz' }) : ''}</p>
+        <div className="document-lines">{order.items.map((item, index) => <div key={`${item.name}-${index}`}><span>{item.quantity} × {item.name}<small>{item.presentation}</small></span><strong>{money(item.line_total_cents)}</strong></div>)}</div>
+        <div className="document-total"><span>{kind === 'ficha' ? 'Total del pedido' : 'Total pagado'}</span><strong>{money(order.total_cents)}</strong></div>
+        <p>{order.status === 'anulado' ? 'Pedido cancelado.' : kind === 'ficha' ? 'Pago pendiente · Conserva este número para solicitar la cuenta.' : `Pagado con ${order.payment_method === 'qr' ? 'QR' : 'efectivo'} · Gracias por tu visita.`}</p>
+      </div>
     </div>
   </div>
 }
@@ -45,6 +54,7 @@ function OperationsWithAuth() {
   const [products, setProducts] = useState<Product[]>([])
   const [orders, setOrders] = useState<Order[]>([])
   const [cart, setCart] = useState<Record<string, number>>({})
+  const [tableNumber, setTableNumber] = useState<number | null>(null)
   const [opening, setOpening] = useState('0')
   const [counted, setCounted] = useState('0')
   const [method, setMethod] = useState<'efectivo' | 'qr'>('efectivo')
@@ -135,16 +145,18 @@ function OperationsWithAuth() {
   }
 
   async function createOrder() {
-    if (!cash || cartItems.length === 0) return
+    if (!cash || cartItems.length === 0 || tableNumber === null) return
     setBusy(true); setMessage('')
     try {
       const res = await authorizedFetch('/api/orders', { method: 'POST', body: JSON.stringify({
         cash_session_id: Number(cash.id),
+        table_number: tableNumber,
         items: cartItems.map((p) => ({ product_id: Number(p.id), quantity: cart[p.id] })),
       }) })
       if (!res.ok) throw new Error((await res.json()).error)
       const data = await res.json()
       setCart({})
+      setTableNumber(null)
       setMessage(`Ficha Nº ${data.order.ticket_number} emitida. Cobro pendiente.`)
       setDocumentOrder({ kind: 'ficha', order: data.order })
       setOperationView('fichas')
@@ -184,20 +196,21 @@ function OperationsWithAuth() {
     finally { setBusy(false) }
   }
 
-  async function advanceOrder(order: Order) {
-    const next = order.status === 'pendiente' ? 'preparando' : order.status === 'preparando' ? 'listo' : order.status === 'listo' ? 'entregado' : null
-    if (!next) return
+  async function cancelOrder(order: Order) {
+    if (order.paid_at || order.status === 'anulado' || !window.confirm(`¿Cancelar el pedido Nº ${order.ticket_number}${order.table_number ? ` de la mesa ${order.table_number}` : ''}? Esta acción no se puede deshacer.`)) return
     setBusy(true); setMessage('')
     try {
-      const response = await authorizedFetch('/api/order-status', { method: 'POST', body: JSON.stringify({ order_id: Number(order.id), status: next }) })
+      const response = await authorizedFetch('/api/order-cancel', { method: 'POST', body: JSON.stringify({ order_id: Number(order.id) }) })
       if (!response.ok) throw new Error((await response.json()).error)
+      setPaymentOrderId(null)
+      setMessage(`Pedido Nº ${order.ticket_number} cancelado.`)
       await refresh()
-    } catch (error) { setMessage(error instanceof Error ? error.message : 'No se pudo actualizar la ficha') }
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'No se pudo cancelar el pedido') }
     finally { setBusy(false) }
   }
 
   if (session.isPending) return <section className="auth-screen">{authThemeButton}<div className="auth-card"><p>Comprobando sesión…</p></div></section>
-  if (!session.data?.user) return <section className="auth-screen">{authThemeButton}<div className="auth-card"><div className="auth-brand"><BrandLogo /><span>NOVILLO</span></div><span className="section-kicker">SISTEMA DE GESTIÓN</span><h2>Bienvenido de nuevo</h2><p className="auth-intro">Ingresa para continuar con la operación del restaurante.</p>
+  if (!session.data?.user) return <section className="auth-screen">{authThemeButton}<div className="auth-card"><div className="auth-brand"><BrandLogo /><span>NOVILLO GRILL</span></div><span className="section-kicker">SISTEMA DE GESTIÓN</span><h2>Bienvenido de nuevo</h2><p className="auth-intro">Ingresa para continuar con la operación del restaurante.</p>
     <form onSubmit={login} className="auth-form">
       {mode === 'sign-up' && <label>Nombre<input required value={name} onChange={(e) => setName(e.target.value)} /></label>}
       <label>Correo<input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
@@ -231,7 +244,7 @@ function OperationsWithAuth() {
   </nav>
 
   const shell = (content: React.ReactNode, title: string) => <div className={`app-shell${panel === 'operacion' ? ' sales-shell' : ''}`}>
-    <aside className="app-sidebar"><a className="side-brand" href="/"><BrandLogo /><span>NOVILLO</span></a>{navigation}<div className="side-profile"><span className="profile-avatar">{staff.display_name.slice(0, 2).toUpperCase()}</span><span><strong>{staff.display_name}</strong><small>{staff.role === 'superadministrador' ? 'Superadministrador' : staff.role === 'caja' ? 'Caja y ventas' : staff.role}</small></span></div></aside>
+    <aside className="app-sidebar"><a className="side-brand" href="/"><BrandLogo /><span>NOVILLO GRILL</span></a>{navigation}<div className="side-profile"><span className="profile-avatar">{staff.display_name.slice(0, 2).toUpperCase()}</span><span><strong>{staff.display_name}</strong><small>{staff.role === 'superadministrador' ? 'Superadministrador' : staff.role === 'caja' ? 'Caja y ventas' : staff.role}</small></span></div></aside>
     <div className="app-main"><header className="app-topbar"><h1 className="topbar-title">{title}</h1>
       {panel === 'operacion' && staff.role !== 'cocina' && <div className="sales-view-switch" role="tablist" aria-label="Vistas de ventas"><button type="button" role="tab" aria-selected={operationView === 'venta'} className={operationView === 'venta' ? 'active' : ''} onClick={() => setOperationView('venta')}>Nuevo pedido</button><button type="button" role="tab" aria-selected={operationView === 'fichas'} className={operationView === 'fichas' ? 'active' : ''} onClick={() => setOperationView('fichas')}>Pedidos <span className="sales-tab-count">{orders.length}</span></button></div>}
       <div className="topbar-right">{panel === 'operacion' && staff.role !== 'cocina' && <button type="button" className={`cash-control${cash ? ' is-open' : ''}`} onClick={() => { setMessage(''); setShowCashDialog(true) }} aria-label={cash ? `Gestionar caja abierta Nº ${cash.id}` : 'Abrir caja'}><span className="cash-control-dot" aria-hidden="true" />{cash ? `Caja Nº ${cash.id}` : 'Abrir caja'}</button>}<button className="theme-toggle" aria-label={theme === 'light' ? 'Activar modo oscuro' : 'Activar modo claro'} title={theme === 'light' ? 'Modo oscuro' : 'Modo claro'} onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}><PanelIcon name={theme === 'light' ? 'moon' : 'sun'} /></button><button className="logout-button" onClick={() => neonAuth!.signOut()}><PanelIcon name="logout" /> <span>Salir</span></button></div>
@@ -244,17 +257,25 @@ function OperationsWithAuth() {
     {message && <p role="status" className="notice">{message}</p>}
     {staff.role !== 'cocina' && operationView === 'venta' && <div className="order-layout sales-layout">
       <div className="catalog-panel sales-catalog"><div className="sales-panel-heading"><div><span className="sales-eyebrow">CATÁLOGO</span><h3>Menú</h3></div></div><input className="product-search" type="search" placeholder="Buscar plato o bebida" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Buscar productos" /><div className="category-filter">{categories.map((c) => <button key={c} className={category === c ? 'selected' : ''} onClick={() => setCategory(c)}>{c}</button>)}</div><div className="product-list sales-product-grid">{visibleProducts.map((p) => <button type="button" key={p.id} className="sales-product-card" onClick={() => setCart((current) => ({ ...current, [p.id]: (current[p.id] ?? 0) + 1 }))}><span className="sales-product-image">{p.image_url ? <img src={p.image_url} alt="" loading="lazy" /> : <span className="sales-image-mark" aria-hidden="true">N</span>}{cart[p.id] > 0 && <span className="sales-product-count">{cart[p.id]}</span>}</span><span className="sales-product-details"><span className="sales-product-category">{p.category}</span><span className="product-name">{p.name}</span><small className="sales-product-presentation">{p.presentation}</small><span className="sales-product-bottom"><strong>{money(p.price_cents)}</strong><span aria-hidden="true">＋</span></span></span></button>)}{visibleProducts.length === 0 && <p className="sales-empty">Aún no hay productos en esta categoría o búsqueda.</p>}</div></div>
-      <div className="cart sales-cart"><div className="sales-cart-heading"><div><span className="sales-eyebrow">NUEVO PEDIDO</span><h3>Pedido</h3></div><span>{cartItems.reduce((sum, p) => sum + cart[p.id], 0)} artículos</span></div><div className="sales-cart-items">{cartItems.length === 0 && <div className="sales-cart-empty"><strong>Aún no hay platos</strong><p>Selecciona productos del menú.</p></div>}{cartItems.map((p) => <div className="cart-row" key={p.id}><span>{p.name}<small>{p.presentation} · {cart[p.id]} × {money(p.price_cents)}</small></span><button aria-label={`Quitar un ${p.name}`} onClick={() => setCart((current) => ({ ...current, [p.id]: current[p.id] - 1 }))}>−</button><strong>{money(p.price_cents * cart[p.id])}</strong></div>)}</div><div className="sales-checkout"><div className="cart-total"><span>Total del pedido</span><strong>{money(total)}</strong></div><button disabled={busy || (Boolean(cash) && cartItems.length === 0)} onClick={cash ? createOrder : () => { setMessage(''); setShowCashDialog(true) }}>{cash ? 'Registrar pedido y emitir ficha' : 'Abrir caja para registrar pedidos'} <span aria-hidden="true">↗</span></button></div></div>
+      <div className="cart sales-cart">
+        <div className="sales-cart-heading"><div><span className="sales-eyebrow">NUEVO PEDIDO</span><h3>Pedido</h3></div><span>{cartItems.reduce((sum, p) => sum + cart[p.id], 0)} artículos</span></div>
+        <div className="sales-cart-items">{cartItems.length === 0 && <div className="sales-cart-empty"><strong>Aún no hay platos</strong><p>Selecciona productos del menú.</p></div>}{cartItems.map((p) => <div className="cart-row" key={p.id}><span>{p.name}<small>{p.presentation} · {cart[p.id]} × {money(p.price_cents)}</small></span><button aria-label={`Quitar un ${p.name}`} onClick={() => setCart((current) => ({ ...current, [p.id]: current[p.id] - 1 }))}>−</button><strong>{money(p.price_cents * cart[p.id])}</strong></div>)}</div>
+        <div className="sales-checkout">
+          <fieldset className="sales-table-picker"><legend>Mesa <span>Selecciona una</span></legend><div className="sales-table-grid">{Array.from({ length: 12 }, (_, index) => index + 1).map((number) => <button key={number} type="button" className={tableNumber === number ? 'selected' : ''} aria-pressed={tableNumber === number} aria-label={`Mesa ${number}`} onClick={() => setTableNumber(number)}>{number}</button>)}</div></fieldset>
+          <div className="cart-total"><span>Total del pedido</span><strong>{money(total)}</strong></div>
+          <button disabled={busy || (Boolean(cash) && (cartItems.length === 0 || tableNumber === null))} onClick={cash ? createOrder : () => { setMessage(''); setShowCashDialog(true) }}>{cash ? 'Registrar pedido' : 'Abrir caja para registrar pedidos'} <span aria-hidden="true">↗</span></button>
+        </div>
+      </div>
     </div>}
     {(staff.role === 'cocina' || operationView === 'fichas') && <section className="tickets-view">
       <div className="list-heading"><h3>Pedidos y cuentas</h3><span>{orders.filter((order) => !order.paid_at && order.status !== 'anulado').length} por cobrar · {orders.length} registros</span></div>
       <div className="ticket-list">{orders.length === 0 && <p className="empty-tickets">Todavía no hay pedidos para este turno.</p>}
         {orders.map((order) => <article className="order-record" key={order.id}>
-          <div className="order-record-main"><strong>Nº {order.ticket_number}</strong><span>{order.items.map((item) => `${item.quantity} ${item.name}`).join(', ')}</span><b>{money(order.total_cents)}</b></div>
-          <div className="order-record-meta"><span className={order.paid_at ? 'payment-badge paid' : 'payment-badge pending'}>{order.paid_at ? `Pagado · ${order.payment_method === 'qr' ? 'QR' : 'efectivo'}` : 'Pendiente de cobro'}</span><span>{new Date(order.service_date).toLocaleDateString('es-BO', { timeZone: 'UTC' })} · Preparación: {order.status}</span></div>
+          <div className="order-record-main"><strong>Nº {order.ticket_number}</strong><span>{order.table_number ? `Mesa ${order.table_number} · ` : ''}{order.items.map((item) => `${item.quantity} ${item.name}`).join(', ')}</span><b>{money(order.total_cents)}</b></div>
+          <div className="order-record-meta"><span className={`payment-badge ${order.status === 'anulado' ? 'canceled' : order.paid_at ? 'paid' : 'pending'}`}>{order.status === 'anulado' ? 'Cancelado' : order.paid_at ? `Pagado · ${order.payment_method === 'qr' ? 'QR' : 'efectivo'}` : 'Pendiente de cobro'}</span><span>{new Date(order.service_date).toLocaleDateString('es-BO', { timeZone: 'UTC' })}{order.table_number ? ` · Mesa ${order.table_number}` : ''}</span></div>
           <div className="order-record-actions"><button type="button" className="secondary-utility" onClick={() => setDocumentOrder({ order, kind: order.paid_at ? 'recibo' : 'ficha' })}>Ver {order.paid_at ? 'recibo' : 'ficha'}</button>
             {staff.role !== 'cocina' && cash && !order.paid_at && order.status !== 'anulado' && <button type="button" onClick={() => setPaymentOrderId(paymentOrderId === order.id ? null : order.id)}>Cobrar pedido</button>}
-            {['superadministrador','administrador','cocina'].includes(staff.role) && ['pendiente','preparando','listo'].includes(order.status) && <button type="button" className="secondary-utility" disabled={busy} onClick={() => advanceOrder(order)}>{order.status === 'pendiente' ? 'Preparar' : order.status === 'preparando' ? 'Marcar listo' : 'Entregar'}</button>}
+            {staff.role !== 'cocina' && !order.paid_at && order.status !== 'anulado' && <button type="button" className="secondary-utility cancel-order-button" disabled={busy} onClick={() => cancelOrder(order)}>Cancelar pedido</button>}
           </div>
           {paymentOrderId === order.id && <div className="order-collection"><div><strong>Cuenta Nº {order.ticket_number}</strong><span>{money(order.total_cents)}</span></div><label>Medio de pago<select value={method} onChange={(event) => setMethod(event.target.value as 'efectivo' | 'qr')}><option value="efectivo">Efectivo</option><option value="qr">QR</option></select></label><button type="button" disabled={busy} onClick={() => collectOrder(order)}>Confirmar cobro y generar recibo</button></div>}
         </article>)}

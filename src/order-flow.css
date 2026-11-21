@@ -9,7 +9,10 @@
 .payment-badge{padding:6px 10px;border-radius:99px;font-size:11px;font-weight:800}
 .payment-badge.pending{background:#fff0d7;color:#8c5709}
 .payment-badge.paid{background:#e5f4ea;color:#26794c}
+.payment-badge.canceled{background:var(--surface-selected);color:var(--muted)}
 .order-record-actions .secondary-utility{padding:8px 11px}
+.order-record-actions .cancel-order-button{margin-left:auto;color:var(--muted)}
+.order-record-actions .cancel-order-button:hover:not(:disabled){color:#ad3f44}
 .order-collection{display:flex;align-items:end;gap:12px;flex-wrap:wrap;padding:16px;background:var(--surface-selected);border:1px solid var(--line);border-radius:11px}
 .order-collection>div{display:grid;gap:3px;margin-right:auto}
 .order-collection>div>strong{font-size:14px;color:var(--ink)}
@@ -23,6 +26,7 @@
 .document-brand{text-align:center;font-size:23px;font-weight:900;letter-spacing:.12em}
 .document-subtitle{text-align:center;font-size:10px;font-weight:800;letter-spacing:.16em;margin:7px 0 12px}
 .document-number{display:block;text-align:center;font-size:35px;line-height:1.15}
+.document-table{display:block;text-align:center;margin-top:5px;font-size:14px;letter-spacing:.12em}
 .order-document>p{text-align:center;font-size:11px;line-height:1.5;color:#55495b}
 .document-lines{border-top:1px dashed #ad9ab5;border-bottom:1px dashed #ad9ab5;margin:18px 0;padding:10px 0}
 .document-lines>div{display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:12px}

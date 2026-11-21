@@ -4,7 +4,7 @@ export async function GET(request: Request): Promise<Response> {
   const access = await authorize(request)
   if (!access) return noAccess()
   const orders = await access.sql`
-    SELECT o.id, o.service_date, o.ticket_number, o.payment_method, o.paid_at, o.total_cents, o.status, o.created_at,
+    SELECT o.id, o.service_date, o.ticket_number, o.table_number, o.payment_method, o.paid_at, o.total_cents, o.status, o.created_at,
       COALESCE(json_agg(json_build_object('name', i.product_name, 'presentation', i.presentation, 'quantity', i.quantity, 'unit_price_cents', i.unit_price_cents, 'line_total_cents', i.line_total_cents))
         FILTER (WHERE i.id IS NOT NULL), '[]') AS items
     FROM public.orders o LEFT JOIN public.order_items i ON i.order_id = o.id
@@ -17,9 +17,10 @@ export async function GET(request: Request): Promise<Response> {
 export async function POST(request: Request): Promise<Response> {
   const access = await authorize(request)
   if (!access || access.staff.role === 'cocina') return noAccess()
-  let body: { cash_session_id?: unknown; items?: unknown }
+  let body: { cash_session_id?: unknown; table_number?: unknown; items?: unknown }
   try { body = await request.json() } catch { return Response.json({ error: 'Datos inválidos' }, { status: 400 }) }
-  if (!Number.isSafeInteger(body.cash_session_id) ||
+  if (!Number.isSafeInteger(body.cash_session_id) || !Number.isSafeInteger(body.table_number) ||
+      Number(body.table_number) < 1 || Number(body.table_number) > 12 ||
       !Array.isArray(body.items) || body.items.length < 1 || body.items.length > 50 ||
       !body.items.every((item: unknown) => item !== null && typeof item === 'object' &&
         Number.isSafeInteger((item as { product_id?: unknown }).product_id) &&
@@ -29,9 +30,10 @@ export async function POST(request: Request): Promise<Response> {
   }
   try {
     const rows = await access.sql`SELECT public.create_pending_order(
-      ${Number(body.cash_session_id)}, ${access.staff.user_id}, ${JSON.stringify(body.items)}::jsonb
+      ${Number(body.cash_session_id)}, ${access.staff.user_id}, ${JSON.stringify(body.items)}::jsonb,
+      ${Number(body.table_number)}::smallint
     ) AS id`
-    const order = await access.sql`SELECT id, service_date, ticket_number, payment_method, paid_at, total_cents, status, created_at
+    const order = await access.sql`SELECT id, service_date, ticket_number, table_number, payment_method, paid_at, total_cents, status, created_at
       FROM public.orders WHERE id = ${rows[0].id}`
     const items = await access.sql`SELECT product_name AS name,presentation,quantity,unit_price_cents,line_total_cents
       FROM public.order_items WHERE order_id=${rows[0].id} ORDER BY id`

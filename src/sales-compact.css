@@ -47,6 +47,14 @@
 .sales-shell .sales-cart .cart-row { padding: 10px 0; font-size: 11px; }
 .sales-shell .sales-cart .cart-row small { font-size: 9px; }
 .sales-shell .sales-checkout { padding-top: 10px; }
+.sales-table-picker { min-width: 0; margin: 0 0 12px; padding: 0; border: 0; }
+.sales-table-picker legend { width: 100%; margin-bottom: 8px; color: var(--ink); font-size: 12px; font-weight: 800; }
+.sales-table-picker legend span { float: right; color: var(--muted); font-size: 10px; font-weight: 600; }
+.sales-table-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; }
+.sales-shell .sales-table-grid button { min-width: 0; min-height: 34px; padding: 0; border: 1px solid var(--line); border-radius: 7px; background: var(--canvas); color: var(--ink); font-size: 11px; font-weight: 800; cursor: pointer; }
+.sales-shell .sales-table-grid button:hover { border-color: var(--brand-primary); color: var(--brand-primary); }
+.sales-shell .sales-table-grid button.selected { border-color: var(--brand-primary); background: var(--brand-primary); color: #fff; }
+.sales-shell .sales-table-grid button:focus-visible { outline: 2px solid var(--brand-amber); outline-offset: 2px; }
 .sales-shell .sales-cart .cart-total { margin-bottom: 10px; padding-top: 10px; }
 .sales-shell .sales-cart .cart-total strong { font-size: 22px; }
 .sales-shell .sales-cart .sales-checkout > button { min-height: 43px; padding: 9px 11px; font-size: 11px; }
