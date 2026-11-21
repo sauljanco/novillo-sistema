@@ -8,34 +8,39 @@
 .sales-shell .nav-caption-second { padding-top: 13px; }
 .sales-shell .app-sidebar .panel-nav button { min-height: 36px; padding: 7px 10px; gap: 9px; font-size: 12px; }
 .sales-shell .side-profile { padding: 10px 7px 0; }
-.sales-shell .work-panel { padding: 12px clamp(14px, 1.4vw, 24px) 24px; }
-.sales-shell .sales-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 0 0 10px; }
-.sales-shell .sales-metrics span { min-height: 62px; padding: 10px 14px !important; gap: 4px; border-radius: 9px; }
-.sales-shell .sales-metrics small { font-size: 9px; letter-spacing: .09em; }
-.sales-shell .sales-metrics strong { font-size: 16px; }
-.sales-shell .operation-toolbar { margin-bottom: 10px; }
-.sales-shell .panel-sections button { padding-top: 7px; padding-bottom: 8px; }
-.sales-shell .sales-layout { grid-template-columns: minmax(0, 1fr) minmax(280px, 300px); gap: 12px; align-items: start; }
-.sales-shell .sales-catalog, .sales-shell .sales-cart { padding: 14px; border-radius: 12px; }
+.sales-shell .app-topbar { display: grid; grid-template-columns: minmax(100px, 1fr) auto minmax(185px, 1fr); gap: 14px; }
+.sales-shell .topbar-right { justify-self: end; }
+.sales-view-switch { display: inline-flex; gap: 3px; padding: 4px; border: 1px solid #70438c; border-radius: 11px; background: #1b0b2b; }
+.sales-view-switch button { min-height: 32px; padding: 6px 13px; border: 0; border-radius: 8px; background: transparent; color: #d7c3e5; font-size: 11px; font-weight: 800; white-space: nowrap; cursor: pointer; }
+.sales-view-switch button:hover, .sales-view-switch button.active { background: var(--brand-primary); color: #fff; }
+.sales-view-switch button:focus-visible, .cash-control:focus-visible { outline: 2px solid var(--brand-amber); outline-offset: 2px; }
+.sales-tab-count { margin-left: 3px; opacity: .8; }
+.topbar-right .cash-control { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 11px; background: #3b1a56; border: 1px solid #70438c; color: #f5eafa; font-size: 11px; font-weight: 800; white-space: nowrap; cursor: pointer; }
+.cash-control-dot { width: 7px; height: 7px; flex: none; border-radius: 50%; background: var(--brand-amber); }
+.cash-control.is-open .cash-control-dot { background: #58c989; }
+.sales-shell .work-panel { padding: 14px clamp(14px, 1.4vw, 24px) 24px; }
+.sales-shell .sales-layout { grid-template-columns: minmax(0, 1fr) minmax(310px, 330px); gap: 12px; align-items: start; }
+.sales-shell .sales-catalog, .sales-shell .sales-cart { padding: 15px; border-radius: 13px; }
 .sales-shell .sales-panel-heading, .sales-shell .sales-cart-heading { align-items: center; margin-bottom: 10px; }
-.sales-shell .sales-panel-heading h3, .sales-shell .sales-cart-heading h3 { margin: 0; font-size: 17px; letter-spacing: -.025em; }
+.sales-shell .sales-panel-heading h3, .sales-shell .sales-cart-heading h3 { margin: 0; font-size: 18px; letter-spacing: -.035em; }
 .sales-shell .sales-eyebrow { display: none; }
 .sales-shell .sales-catalog .product-search { min-height: 37px; margin-bottom: 8px; padding: 8px 11px; font-size: 12px; }
 .sales-shell .sales-catalog .category-filter { flex-wrap: nowrap; gap: 5px; padding-bottom: 9px; scrollbar-width: thin; }
 .sales-shell .sales-catalog .category-filter button { padding: 6px 10px; font-size: 11px; }
-.sales-shell .sales-product-grid { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 8px; max-height: calc(100dvh - 344px); min-height: 260px; padding: 1px 3px 3px 1px; }
-.sales-shell .work-panel .sales-product-grid .sales-product-card { min-height: 164px; height: 164px; border-radius: 9px; }
-.sales-shell .sales-product-image { height: 83px; flex: 0 0 83px; }
-.sales-shell .sales-image-mark { font-size: 42px; }
+.sales-shell .sales-product-grid { grid-template-columns: repeat(auto-fill, minmax(146px, 1fr)); gap: 9px; max-height: calc(100dvh - 220px); min-height: 260px; padding: 1px 3px 3px 1px; }
+.sales-shell .work-panel .sales-product-grid .sales-product-card { min-height: 176px; height: 176px; border-radius: 10px; }
+.sales-shell .sales-product-image { height: 91px; flex: 0 0 91px; }
+.sales-shell .sales-product-image:has(.sales-image-mark) { background: linear-gradient(145deg, var(--surface-dark), var(--brand-black)); }
+.sales-shell .sales-image-mark { display: grid; place-items: center; width: 47px; height: 47px; border: 1px solid var(--brand-gold); border-radius: 50%; color: var(--brand-gold); font-family: 'DM Serif Display', Georgia, serif; font-size: 31px; line-height: 1; opacity: .82; }
 .sales-shell .sales-product-count { top: 5px; right: 5px; min-width: 21px; height: 21px; font-size: 10px; }
-.sales-shell .sales-product-details { padding: 7px 9px 8px; }
+.sales-shell .sales-product-details { padding: 8px 10px 9px; }
 .sales-shell .sales-product-category { display: none; }
-.sales-shell .sales-product-details .product-name { display: -webkit-box; overflow: hidden; margin: 0; font-size: 11px; line-height: 1.25; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.sales-shell .sales-product-presentation { display: block; overflow: hidden; margin-top: 1px; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.sales-shell .sales-product-details .product-name { display: -webkit-box; overflow: hidden; margin: 0; font-size: 12px; line-height: 1.25; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.sales-shell .sales-product-presentation { display: block; overflow: hidden; margin-top: 2px; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .sales-shell .sales-product-bottom { padding-top: 4px; }
-.sales-shell .sales-product-bottom strong { font-size: 12px !important; }
+.sales-shell .sales-product-bottom strong { font-size: 13px !important; }
 .sales-shell .sales-product-bottom > span { width: 21px; height: 21px; font-size: 15px; }
-.sales-shell .sales-cart { position: sticky; top: 76px; height: calc(100dvh - 214px); min-height: 400px; max-height: 760px; }
+.sales-shell .sales-cart { position: sticky; top: 78px; height: calc(100dvh - 100px); min-height: 400px; max-height: 880px; }
 .sales-shell .sales-cart-heading { padding-bottom: 11px; }
 .sales-shell .sales-cart-items { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
 .sales-shell .sales-cart-empty { min-height: 140px; }
@@ -45,25 +50,46 @@
 .sales-shell .sales-cart .cart-total { margin-bottom: 10px; padding-top: 10px; }
 .sales-shell .sales-cart .cart-total strong { font-size: 22px; }
 .sales-shell .sales-cart .sales-checkout > button { min-height: 43px; padding: 9px 11px; font-size: 11px; }
+.cash-dialog-backdrop { position: fixed; inset: 0; z-index: 18; display: grid; place-items: center; padding: 18px; background: #09050bc9; backdrop-filter: blur(5px); }
+.cash-dialog { position: relative; width: min(100%, 430px); padding: 28px; border: 1px solid var(--line); border-radius: 17px; background: var(--surface); color: var(--ink); box-shadow: 0 28px 80px #0006; }
+.cash-dialog-kicker { color: var(--brand-primary); font-size: 10px; font-weight: 800; letter-spacing: .16em; }
+.cash-dialog h2 { margin: 8px 0 8px; font-size: 24px; letter-spacing: -.04em; }
+.cash-dialog p { margin: 0 0 22px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.cash-dialog form, .cash-dialog label { display: grid; gap: 9px; }
+.cash-dialog label { color: var(--ink); font-size: 12px; font-weight: 700; }
+.cash-dialog input { width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--canvas); color: var(--ink); }
+.cash-dialog form > button { min-height: 44px; margin-top: 8px; border: 0; border-radius: 9px; background: var(--brand-primary); color: #fff; font-weight: 800; cursor: pointer; }
+.cash-dialog form > button:hover { background: var(--brand-primary-hover); }
+.cash-dialog-total { display: flex; justify-content: space-between; gap: 12px; padding-top: 13px; border-top: 1px solid var(--line); font-size: 12px; }
+.cash-dialog-total strong { color: var(--brand-primary); font-size: 16px; }
+.cash-dialog .cash-dialog-error { margin: 12px 0 0; color: #b54d30; }
+.work-panel .cash-dialog-close { position: absolute; top: 12px; right: 14px; padding: 2px 8px; border: 0; background: transparent; color: var(--muted); font-size: 24px; cursor: pointer; }
+.work-panel .cash-dialog-close:hover:not(:disabled) { background: var(--surface-selected); color: var(--brand-primary); }
 
 @media (max-width: 1050px) {
   .sales-shell .sales-layout { grid-template-columns: minmax(0, 1fr) minmax(270px, 290px); }
+  .sales-shell .app-topbar { grid-template-columns: auto 1fr auto; }
+  .sales-view-switch { justify-self: center; }
 }
 @media (max-width: 900px) {
   .sales-shell .sales-layout { grid-template-columns: 1fr; }
-  .sales-shell .sales-product-grid { max-height: 440px; }
+  .sales-shell .sales-product-grid { max-height: 520px; }
   .sales-shell .sales-cart { position: static; height: auto; min-height: 230px; max-height: none; }
   .sales-shell .sales-cart-items { max-height: 300px; }
 }
 @media (max-width: 700px) {
   .sales-shell { display: block; }
+  .sales-shell .app-topbar { grid-template-columns: minmax(0, 1fr) auto; gap: 5px; height: 56px; padding: 0 10px; }
+  .sales-shell .topbar-title { display: none; }
+  .sales-view-switch { justify-self: start; padding: 3px; }
+  .sales-view-switch button { min-height: 30px; padding: 6px 8px; font-size: 10px; }
+  .sales-shell .topbar-right { gap: 4px; }
+  .topbar-right .cash-control { justify-content: center; width: 34px; padding: 0; font-size: 0; }
   .sales-shell .app-sidebar { height: auto; padding: 10px 12px; }
   .sales-shell .side-brand { padding: 0 0 8px; }
   .sales-shell .panel-nav { overflow-x: auto; overflow-y: hidden; }
   .sales-shell .app-sidebar .panel-nav button { width: auto; flex: none; min-height: 34px; }
   .sales-shell .work-panel { padding: 10px 12px 28px; }
-  .sales-shell .sales-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .sales-shell .sales-metrics span { min-height: 54px; padding: 8px 10px !important; }
   .sales-shell .sales-product-grid { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); max-height: none; }
   .sales-shell .work-panel .sales-product-grid .sales-product-card { min-height: 152px; height: 152px; }
   .sales-shell .sales-product-image { height: 72px; flex-basis: 72px; }

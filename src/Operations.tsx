@@ -7,7 +7,6 @@ import { categoriesWithProducts } from './menuCategories'
 import './modern.css'
 import './identity.css'
 import './sales.css'
-import './sales-metrics.css'
 import './order-flow.css'
 import './theme-dark.css'
 import './sales-compact.css'
@@ -48,11 +47,10 @@ function OperationsWithAuth() {
   const [cart, setCart] = useState<Record<string, number>>({})
   const [opening, setOpening] = useState('0')
   const [counted, setCounted] = useState('0')
-  const [closing, setClosing] = useState<{ expected_cash_cents: number; difference_cents: number } | null>(null)
   const [method, setMethod] = useState<'efectivo' | 'qr'>('efectivo')
   const [panel, setPanel] = useState('operacion')
   const [operationView, setOperationView] = useState<'venta' | 'fichas'>('venta')
-  const [showClosing, setShowClosing] = useState(false)
+  const [showCashDialog, setShowCashDialog] = useState(false)
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('Todos')
   const [busy, setBusy] = useState(false)
@@ -64,6 +62,12 @@ function OperationsWithAuth() {
     document.documentElement.dataset.theme = theme
     localStorage.setItem('novillo-theme', theme)
   }, [theme])
+  useEffect(() => {
+    if (!showCashDialog) return
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') setShowCashDialog(false) }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [showCashDialog])
   const authThemeButton = <button type="button" className="auth-theme-toggle" aria-label={theme === 'light' ? 'Activar modo oscuro' : 'Activar modo claro'} title={theme === 'light' ? 'Modo oscuro' : 'Modo claro'} onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}><PanelIcon name={theme === 'light' ? 'moon' : 'sun'} /></button>
 
   async function refresh() {
@@ -124,6 +128,7 @@ function OperationsWithAuth() {
       const cents = Math.round(Number(opening) * 100)
       const res = await authorizedFetch('/api/cash', { method: 'POST', body: JSON.stringify({ opening_cash_cents: cents }) })
       if (!res.ok) throw new Error((await res.json()).error)
+      setShowCashDialog(false)
       await refresh()
     } catch (error) { setMessage(error instanceof Error ? error.message : 'No se pudo abrir caja') }
     finally { setBusy(false) }
@@ -172,8 +177,8 @@ function OperationsWithAuth() {
       const cents = Math.round(Number(counted) * 100)
       const res = await authorizedFetch('/api/cash-close', { method: 'POST', body: JSON.stringify({ session_id: Number(cash.id), counted_cash_cents: cents }) })
       if (!res.ok) throw new Error((await res.json()).error)
-      setClosing((await res.json()).closing)
-      setShowClosing(false)
+      setMessage('Caja cerrada correctamente.')
+      setShowCashDialog(false)
       await refresh()
     } catch (error) { setMessage(error instanceof Error ? error.message : 'No se pudo cerrar la caja') }
     finally { setBusy(false) }
@@ -225,21 +230,23 @@ function OperationsWithAuth() {
       <button key={key} className={panel === key ? 'selected' : ''} onClick={() => setPanel(key)}><span className="nav-icon"><PanelIcon name={panelIcons[key]} /></span>{label}</button>)}
   </nav>
 
-  const shell = (content: React.ReactNode, title: string) => <div className={`app-shell${panel === 'operacion' ? ' sales-shell' : ''}`}><aside className="app-sidebar"><a className="side-brand" href="/"><BrandLogo /><span>NOVILLO</span></a>{navigation}<div className="side-profile"><span className="profile-avatar">{staff.display_name.slice(0, 2).toUpperCase()}</span><span><strong>{staff.display_name}</strong><small>{staff.role === 'superadministrador' ? 'Superadministrador' : staff.role === 'caja' ? 'Caja y ventas' : staff.role}</small></span></div></aside><div className="app-main"><header className="app-topbar"><h1 className="topbar-title">{title}</h1><div className="topbar-right">{panel === 'operacion' && cash && <span className="cash-status">● Caja abierta · #{cash.id}</span>}<button className="theme-toggle" aria-label={theme === 'light' ? 'Activar modo oscuro' : 'Activar modo claro'} title={theme === 'light' ? 'Modo oscuro' : 'Modo claro'} onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}><PanelIcon name={theme === 'light' ? 'moon' : 'sun'} /></button><button className="logout-button" onClick={() => neonAuth!.signOut()}><PanelIcon name="logout" /> <span>Salir</span></button></div></header><main className="work-panel">{content}</main></div></div>
+  const shell = (content: React.ReactNode, title: string) => <div className={`app-shell${panel === 'operacion' ? ' sales-shell' : ''}`}>
+    <aside className="app-sidebar"><a className="side-brand" href="/"><BrandLogo /><span>NOVILLO</span></a>{navigation}<div className="side-profile"><span className="profile-avatar">{staff.display_name.slice(0, 2).toUpperCase()}</span><span><strong>{staff.display_name}</strong><small>{staff.role === 'superadministrador' ? 'Superadministrador' : staff.role === 'caja' ? 'Caja y ventas' : staff.role}</small></span></div></aside>
+    <div className="app-main"><header className="app-topbar"><h1 className="topbar-title">{title}</h1>
+      {panel === 'operacion' && staff.role !== 'cocina' && <div className="sales-view-switch" role="tablist" aria-label="Vistas de ventas"><button type="button" role="tab" aria-selected={operationView === 'venta'} className={operationView === 'venta' ? 'active' : ''} onClick={() => setOperationView('venta')}>Nuevo pedido</button><button type="button" role="tab" aria-selected={operationView === 'fichas'} className={operationView === 'fichas' ? 'active' : ''} onClick={() => setOperationView('fichas')}>Pedidos <span className="sales-tab-count">{orders.length}</span></button></div>}
+      <div className="topbar-right">{panel === 'operacion' && staff.role !== 'cocina' && <button type="button" className={`cash-control${cash ? ' is-open' : ''}`} onClick={() => { setMessage(''); setShowCashDialog(true) }} aria-label={cash ? `Gestionar caja abierta Nº ${cash.id}` : 'Abrir caja'}><span className="cash-control-dot" aria-hidden="true" />{cash ? `Caja Nº ${cash.id}` : 'Abrir caja'}</button>}<button className="theme-toggle" aria-label={theme === 'light' ? 'Activar modo oscuro' : 'Activar modo claro'} title={theme === 'light' ? 'Modo oscuro' : 'Modo claro'} onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}><PanelIcon name={theme === 'light' ? 'moon' : 'sun'} /></button><button className="logout-button" onClick={() => neonAuth!.signOut()}><PanelIcon name="logout" /> <span>Salir</span></button></div>
+    </header><main className="work-panel">{content}</main></div>
+  </div>
 
   if (panel !== 'operacion' && isAdmin) return shell(<AdminPanels panel={panel} isSuper={staff.role === 'superadministrador'} />, adminTabs.find(([key]) => key === panel)?.[1] || 'Gestión')
 
   return shell(<>
     {message && <p role="status" className="notice">{message}</p>}
-    {closing && <p className="notice" role="status">Caja cerrada. Efectivo esperado {money(closing.expected_cash_cents)} · Diferencia {money(closing.difference_cents)}.</p>}
-    {staff.role !== 'cocina' && cash && <><div className="cash-summary sales-metrics"><span><small>CAJA ACTIVA</small><strong>Nº {cash.id}</strong></span><span><small>FONDO INICIAL</small><strong>{money(cash.opening_cash_cents)}</strong></span><span><small>VENTAS EN EFECTIVO</small><strong>{money(cash.cash_sales_cents)}</strong></span><span><small>VENTAS CON QR</small><strong>{money(cash.qr_sales_cents)}</strong></span></div><div className="panel-toolbar operation-toolbar"><div className="panel-sections" role="tablist" aria-label="Vistas de ventas"><button type="button" role="tab" aria-selected={operationView === 'venta'} className={operationView === 'venta' && !showClosing ? 'active' : ''} onClick={() => { setOperationView('venta'); setShowClosing(false) }}>Nuevo pedido</button><button type="button" role="tab" aria-selected={operationView === 'fichas'} className={operationView === 'fichas' && !showClosing ? 'active' : ''} onClick={() => { setOperationView('fichas'); setShowClosing(false) }}>Pedidos <span className="tab-count">{orders.length}</span></button></div><button type="button" className="secondary-utility" onClick={() => setShowClosing(true)}>Cerrar caja</button></div></>}
-    {staff.role !== 'cocina' && !cash && <form onSubmit={openCash} className="cash-open"><h3>Abrir caja</h3><label>Fondo inicial en Bs<input type="number" min="0" step="0.01" value={opening} onChange={(e) => setOpening(e.target.value)} /></label><button disabled={busy}>Abrir turno</button></form>}
-    {staff.role !== 'cocina' && cash && showClosing && <div className="editor-stage"><button type="button" className="back-button" onClick={() => setShowClosing(false)}>← Volver a la operación</button><form onSubmit={closeCash} className="admin-form editor-form"><h3>Cerrar caja</h3><p className="form-help">Efectivo esperado: {money(cash.opening_cash_cents + cash.cash_sales_cents)} · Ventas QR: {money(cash.qr_sales_cents)}.</p><label>Efectivo contado en Bs<input required type="number" min="0" step="0.01" value={counted} onChange={(e) => setCounted(e.target.value)} /></label><div className="form-actions"><button disabled={busy}>Guardar arqueo y cerrar</button><button type="button" className="secondary" onClick={() => setShowClosing(false)}>Cancelar</button></div></form></div>}
-    {staff.role !== 'cocina' && cash && !showClosing && operationView === 'venta' && <div className="order-layout sales-layout">
-      <div className="catalog-panel sales-catalog"><div className="sales-panel-heading"><div><span className="sales-eyebrow">CATÁLOGO</span><h3>Elige los productos</h3></div><span>{visibleProducts.length} disponibles</span></div><input className="product-search" type="search" placeholder="Buscar por nombre o categoría" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Buscar productos" /><div className="category-filter">{categories.map((c) => <button key={c} className={category === c ? 'selected' : ''} onClick={() => setCategory(c)}>{c}</button>)}</div><div className="product-list sales-product-grid">{visibleProducts.map((p) => <button type="button" key={p.id} className="sales-product-card" onClick={() => setCart((current) => ({ ...current, [p.id]: (current[p.id] ?? 0) + 1 }))}><span className="sales-product-image">{p.image_url ? <img src={p.image_url} alt="" loading="lazy" /> : <span className="sales-image-mark" aria-hidden="true">✦</span>}{cart[p.id] > 0 && <span className="sales-product-count">{cart[p.id]}</span>}</span><span className="sales-product-details"><span className="sales-product-category">{p.category}</span><span className="product-name">{p.name}</span><small className="sales-product-presentation">{p.presentation}</small><span className="sales-product-bottom"><strong>{money(p.price_cents)}</strong><span aria-hidden="true">＋</span></span></span></button>)}{visibleProducts.length === 0 && <p className="sales-empty">Aún no hay productos en esta categoría o búsqueda.</p>}</div></div>
-      <div className="cart sales-cart"><div className="sales-cart-heading"><div><span className="sales-eyebrow">NUEVO PEDIDO</span><h3>Pedido actual</h3></div><span>{cartItems.reduce((sum, p) => sum + cart[p.id], 0)} artículos</span></div><div className="sales-cart-items">{cartItems.length === 0 && <div className="sales-cart-empty"><span aria-hidden="true">✦</span><strong>La mesa está lista</strong><p>Elige un producto para comenzar el pedido.</p></div>}{cartItems.map((p) => <div className="cart-row" key={p.id}><span>{p.name}<small>{p.presentation} · {cart[p.id]} × {money(p.price_cents)}</small></span><button aria-label={`Quitar un ${p.name}`} onClick={() => setCart((current) => ({ ...current, [p.id]: current[p.id] - 1 }))}>−</button><strong>{money(p.price_cents * cart[p.id])}</strong></div>)}</div><div className="sales-checkout"><div className="cart-total"><span>Total del pedido</span><strong>{money(total)}</strong></div><button disabled={busy || cartItems.length === 0} onClick={createOrder}>Registrar pedido y emitir ficha <span aria-hidden="true">↗</span></button></div></div>
+    {staff.role !== 'cocina' && operationView === 'venta' && <div className="order-layout sales-layout">
+      <div className="catalog-panel sales-catalog"><div className="sales-panel-heading"><div><span className="sales-eyebrow">CATÁLOGO</span><h3>Menú</h3></div></div><input className="product-search" type="search" placeholder="Buscar plato o bebida" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Buscar productos" /><div className="category-filter">{categories.map((c) => <button key={c} className={category === c ? 'selected' : ''} onClick={() => setCategory(c)}>{c}</button>)}</div><div className="product-list sales-product-grid">{visibleProducts.map((p) => <button type="button" key={p.id} className="sales-product-card" onClick={() => setCart((current) => ({ ...current, [p.id]: (current[p.id] ?? 0) + 1 }))}><span className="sales-product-image">{p.image_url ? <img src={p.image_url} alt="" loading="lazy" /> : <span className="sales-image-mark" aria-hidden="true">N</span>}{cart[p.id] > 0 && <span className="sales-product-count">{cart[p.id]}</span>}</span><span className="sales-product-details"><span className="sales-product-category">{p.category}</span><span className="product-name">{p.name}</span><small className="sales-product-presentation">{p.presentation}</small><span className="sales-product-bottom"><strong>{money(p.price_cents)}</strong><span aria-hidden="true">＋</span></span></span></button>)}{visibleProducts.length === 0 && <p className="sales-empty">Aún no hay productos en esta categoría o búsqueda.</p>}</div></div>
+      <div className="cart sales-cart"><div className="sales-cart-heading"><div><span className="sales-eyebrow">NUEVO PEDIDO</span><h3>Pedido</h3></div><span>{cartItems.reduce((sum, p) => sum + cart[p.id], 0)} artículos</span></div><div className="sales-cart-items">{cartItems.length === 0 && <div className="sales-cart-empty"><strong>Aún no hay platos</strong><p>Selecciona productos del menú.</p></div>}{cartItems.map((p) => <div className="cart-row" key={p.id}><span>{p.name}<small>{p.presentation} · {cart[p.id]} × {money(p.price_cents)}</small></span><button aria-label={`Quitar un ${p.name}`} onClick={() => setCart((current) => ({ ...current, [p.id]: current[p.id] - 1 }))}>−</button><strong>{money(p.price_cents * cart[p.id])}</strong></div>)}</div><div className="sales-checkout"><div className="cart-total"><span>Total del pedido</span><strong>{money(total)}</strong></div><button disabled={busy || (Boolean(cash) && cartItems.length === 0)} onClick={cash ? createOrder : () => { setMessage(''); setShowCashDialog(true) }}>{cash ? 'Registrar pedido y emitir ficha' : 'Abrir caja para registrar pedidos'} <span aria-hidden="true">↗</span></button></div></div>
     </div>}
-    {(staff.role === 'cocina' || (operationView === 'fichas' && !showClosing)) && <section className="tickets-view">
+    {(staff.role === 'cocina' || operationView === 'fichas') && <section className="tickets-view">
       <div className="list-heading"><h3>Pedidos y cuentas</h3><span>{orders.filter((order) => !order.paid_at && order.status !== 'anulado').length} por cobrar · {orders.length} registros</span></div>
       <div className="ticket-list">{orders.length === 0 && <p className="empty-tickets">Todavía no hay pedidos para este turno.</p>}
         {orders.map((order) => <article className="order-record" key={order.id}>
@@ -253,6 +260,7 @@ function OperationsWithAuth() {
         </article>)}
       </div>
     </section>}
+    {staff.role !== 'cocina' && showCashDialog && <div className="cash-dialog-backdrop" onClick={(event) => { if (event.target === event.currentTarget) setShowCashDialog(false) }}><section className="cash-dialog" role="dialog" aria-modal="true" aria-label={cash ? 'Gestionar caja' : 'Abrir caja'}><button type="button" className="cash-dialog-close" aria-label="Cerrar" onClick={() => setShowCashDialog(false)}>×</button><span className="cash-dialog-kicker">CAJA</span><h2>{cash ? `Turno Nº ${cash.id}` : 'Abrir caja'}</h2>{cash ? <><p>La caja está abierta. Al terminar el turno, registra el efectivo contado para generar el arqueo.</p><form onSubmit={closeCash}><label>Efectivo contado en Bs<input required type="number" min="0" step="0.01" value={counted} onChange={(e) => setCounted(e.target.value)} autoFocus /></label><div className="cash-dialog-total"><span>Efectivo esperado</span><strong>{money(cash.opening_cash_cents + cash.cash_sales_cents)}</strong></div><button disabled={busy}>Cerrar caja y guardar arqueo</button></form></> : <><p>Abre un turno para registrar pedidos y cobros.</p><form onSubmit={openCash}><label>Fondo inicial en Bs<input required type="number" min="0" step="0.01" value={opening} onChange={(e) => setOpening(e.target.value)} autoFocus /></label><button disabled={busy}>Abrir turno</button></form></>}{message && <p className="cash-dialog-error" role="alert">{message}</p>}</section></div>}
     {documentOrder && <OrderDocument order={documentOrder.order} kind={documentOrder.kind} onClose={() => setDocumentOrder(null)} />}
 
   </>, staff.role === 'cocina' ? 'Cocina y fichas' : 'Ventas')
