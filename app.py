@@ -91,7 +91,7 @@ def layout(title, body, refresh=False):
     table{{border-collapse:collapse;width:100%}}td,th{{text-align:left;padding:8px;border-bottom:1px solid #eee}}.muted{{color:#71665d}}
     .total{{font-size:2rem;font-weight:800;color:#9b4a11}}.error{{color:#a00}}label{{display:inline-block;margin:6px}}
     @media print{{nav,form,button{{display:none}}body{{background:white}}}}
-    </style><body><header><h1>NOVILLO</h1><nav><a href="/">Atención</a><a href="/caja">Caja</a><a href="/cocina">Cocina</a><a href="/personal">Personal</a><a href="/cliente" target="_blank">Segunda pantalla ↗</a></nav></header>{body}</body></html>'''
+    </style><body><header><h1>NOVILLO</h1><nav><a href="/">Atención</a><a href="/caja">Caja</a><a href="/cocina">Cocina</a><a href="/personal">Personal</a></nav></header>{body}</body></html>'''
 
 
 class App(BaseHTTPRequestHandler):
@@ -121,17 +121,13 @@ class App(BaseHTTPRequestHandler):
         try:
             with db() as con:
                 if path == "/": body = self.orders(con)
-                elif path == "/cliente": body = self.customer(con)
                 elif path == "/caja": body = self.cash(con)
                 elif path == "/cocina": body = self.kitchen(con)
                 elif path == "/personal": body = self.staff(con)
                 elif path.startswith('/ficha/'):
                     body = self.ticket(con, int(path.rsplit('/',1)[1]))
-                elif path == "/cliente-estado":
-                    row = con.execute("SELECT data,state,ticket FROM draft WHERE id=1").fetchone()
-                    return self.send(json.dumps(dict(row)), content_type="application/json; charset=utf-8")
                 else: return self.send(layout("No encontrado", "<p>Página no encontrada.</p>"), 404)
-            self.send(layout("Novillo", body, refresh=path in ("/cliente", "/cocina")))
+            self.send(layout("Novillo", body, refresh=path == "/cocina"))
         except Exception as exc:
             self.send(layout("Error", f'<p class="error">{esc(exc)}</p>'), 500)
 
@@ -237,20 +233,9 @@ class App(BaseHTTPRequestHandler):
         total = sum(p['price']*quantities.get(str(p['id']),0) for p in products)
         rows = ''.join(f'<tr><td>{esc(p["category"])} · {esc(p["name"])} · {esc(p["presentation"])}</td><td>{bs(p["price"])}</td><td><input type="number" min="0" max="99" name="p_{p["id"]}" value="{quantities.get(str(p["id"]),0)}" style="width:65px"></td></tr>' for p in products)
         info = f'<p>Caja abierta: turno #{shift["id"]}</p>' if shift else '<p class="error">Abre la caja antes de cobrar.</p>'
-        return f'''<h2>Atención y pedidos</h2>{info}<div class="card"><p>Selecciona cantidades y pulsa «Mostrar al cliente». Abre la segunda pantalla en otra ventana o monitor.</p>
-        <form method="post" action="/borrador"><label>Nombre o referencia del cliente <input name="customer_name" value="{esc(draft['customer_name'])}" maxlength="80"></label><table><tr><th>Producto</th><th>Precio</th><th>Cantidad</th></tr>{rows}</table><p><button>Mostrar al cliente</button></p></form></div>
-        <div class="card"><p>Total del pedido mostrado</p><div class="total">{bs(total)}</div><form method="post" action="/cobrar"><label>Medio de pago <select name="payment"><option>efectivo</option><option>QR</option></select></label><button {'disabled' if not shift or not quantities else ''}>Cobrar y emitir ficha</button></form></div>'''
-
-    def customer(self, con):
-        draft = con.execute("SELECT * FROM draft WHERE id=1").fetchone()
-        items = json.loads(draft['data'])
-        products = {str(p['id']):p for p in con.execute("SELECT * FROM products").fetchall()}
-        rows = ''.join(f'<tr><td>{qty} × {esc(products[key]["name"])} · {esc(products[key]["presentation"])}</td><td>{bs(qty*products[key]["price"])}</td></tr>' for key,qty in items.items() if key in products)
-        total = sum(qty*products[key]['price'] for key,qty in items.items() if key in products)
-        heading = f'¡Gracias! Su ficha es <strong>#{draft["ticket"]}</strong>' if draft['state']=='paid' else 'Su pedido' if items else 'Esperando pedido'
-        customer = f'<p>Cliente: {esc(draft["customer_name"])}</p>' if draft['customer_name'] else ''
-        sub = 'Pago recibido' if draft['state']=='paid' else 'Monto a cancelar'
-        return f'<div class="card"><h1>{heading}</h1>{customer}<table>{rows}</table><p>{sub}</p><div class="total">{bs(total) if items else "—"}</div><p class="muted">NOVILLO · Sacaba, Cochabamba</p></div>'
+        return f'''<h2>Atención y pedidos</h2>{info}<div class="card"><p>Selecciona las cantidades y prepara el pedido.</p>
+        <form method="post" action="/borrador"><label>Nombre o referencia del cliente <input name="customer_name" value="{esc(draft['customer_name'])}" maxlength="80"></label><table><tr><th>Producto</th><th>Precio</th><th>Cantidad</th></tr>{rows}</table><p><button>Guardar pedido</button></p></form></div>
+        <div class="card"><p>Total del pedido</p><div class="total">{bs(total)}</div><form method="post" action="/cobrar"><label>Medio de pago <select name="payment"><option>efectivo</option><option>QR</option></select></label><button {'disabled' if not shift or not quantities else ''}>Cobrar y emitir ficha</button></form></div>'''
 
     def cash(self, con):
         shift = con.execute("SELECT * FROM shifts ORDER BY id DESC LIMIT 1").fetchone()
@@ -311,5 +296,5 @@ class App(BaseHTTPRequestHandler):
 
 if __name__ == '__main__':
     init()
-    print('Novillo: http://localhost:8000  |  segunda pantalla: http://localhost:8000/cliente')
+    print('Novillo: http://localhost:8000')
     ThreadingHTTPServer(('127.0.0.1', 8000), App).serve_forever()

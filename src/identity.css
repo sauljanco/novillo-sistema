@@ -155,13 +155,7 @@ h1, h2, h3 { font-family: Manrope, system-ui, sans-serif; }
 .auth-card button:hover:not(:disabled) { background: var(--brand-primary-hover); }
 .auth-card input:focus-visible, .auth-card button:focus-visible { outline: 2px solid var(--brand-vibrant); outline-offset: 2px; }
 .auth-card .text-button { color: var(--brand-red); }
-.customer-screen { background: var(--canvas); }
-.customer-screen .brand { font-family: Manrope, sans-serif; }
-.customer-screen .novillo-logo, .page .topbar .novillo-logo { width: 58px; height: 58px; background: var(--brand-black); border-radius: 9px; padding: 3px; }
-.customer-screen h1 { font-family: Manrope, sans-serif; font-weight: 800; letter-spacing: -.06em; }
-.customer-row { border-color: var(--line); background: var(--surface); }
-.customer-total { background: var(--brand-black); }
-.customer-total strong { color: #ffb84b; }
+.page .topbar .novillo-logo { width: 58px; height: 58px; background: var(--brand-black); border-radius: 9px; padding: 3px; }
 .page .topbar { border-color: var(--line); }
 .page .brand { font-family: Manrope, sans-serif; letter-spacing: .08em; }
 .page .hero-copy h1 { font-family: 'DM Serif Display', Georgia, serif; font-size: clamp(50px, 5vw, 78px); line-height: 1.07; letter-spacing: -.035em; font-weight: 400; }

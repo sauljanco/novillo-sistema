@@ -3,16 +3,15 @@
 Estado: prototipo local en desarrollo. Entrevista y dos fotografías del menú recibidas el 7 de noviembre de 2026. Moneda: bolivianos (Bs).
 
 ## Flujo confirmado
-El operador arma y registra el pedido; se emite una ficha numerada sin cobrar y pasa a preparación. La segunda pantalla muestra productos, cantidades y monto. Al terminar de comer, el cliente solicita la cuenta: caja cobra el pedido y emite un recibo con el mismo número de ficha. Los medios de pago iniciales son efectivo y QR.
+El operador arma y registra el pedido; se emite una ficha numerada sin cobrar y pasa a preparación. Al terminar de comer, el cliente solicita la cuenta: caja cobra el pedido y emite un recibo con el mismo número de ficha. Los medios de pago iniciales son efectivo y QR.
 
 ## Módulos previstos
 1. Atención: catálogo editable, pedido, cobro, ficha, preparación y entrega.
-2. Segunda pantalla: resumen sincronizado del pedido en curso, número de ficha, total y estado de pago; sin controles administrativos.
-3. Caja: apertura, ingresos/egresos, arqueo y cierre por turno; QR se concilia aparte del efectivo.
-4. Personal (~8 personas): días previstos, jornadas realmente trabajadas, turnos rotativos, tarifas independientes para jornada completa y medio turno, adelantos, pagos y saldo.
-5. Compras e inversión: proveedores, compras, pagos pendientes, aportes y adquisición de equipos separados de ventas.
-6. Inventario: unidades, existencias, mínimos, entradas, consumo, mermas, ajustes y recetas validadas por el restaurante.
-7. Reportes: ventas, anulaciones, caja, compras, existencias y planilla.
+2. Caja: apertura, ingresos/egresos, arqueo y cierre por turno; QR se concilia aparte del efectivo.
+3. Personal (~8 personas): días previstos, jornadas realmente trabajadas, turnos rotativos, tarifas independientes para jornada completa y medio turno, adelantos, pagos y saldo.
+4. Compras e inversión: proveedores, compras, pagos pendientes, aportes y adquisición de equipos separados de ventas.
+5. Inventario: unidades, existencias, mínimos, entradas, consumo, mermas, ajustes y recetas validadas por el restaurante.
+6. Reportes: ventas, anulaciones, caja, compras, existencias y planilla.
 
 ## Regla de arqueo
 Efectivo esperado = fondo inicial + cobros en efectivo + otros ingresos en efectivo - egresos en efectivo - devoluciones en efectivo. Diferencia = efectivo contado - efectivo esperado. Los cobros QR no incrementan el efectivo esperado.
@@ -25,7 +24,6 @@ Las 45 presentaciones y precios de las imágenes están transcritos en menu-inic
 
 ## Criterios para validar la primera versión
 - Dos churrascos de Bs 75 más una limonada en jarra de Bs 25 suman Bs 175.
-- La segunda pantalla muestra el pedido en curso y el monto a cancelar.
 - La ficha aparece al registrar el pedido; el recibo aparece solo después del pago y conserva el número.
 - Un cobro QR se suma a ventas y no al efectivo esperado.
 - Días programados y realmente trabajados son campos distintos.

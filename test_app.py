@@ -28,12 +28,11 @@ with tempfile.TemporaryDirectory() as tmp:
         limo = con.execute("SELECT id FROM products WHERE name='Limonada' AND presentation='Jarra'").fetchone()[0]
     assert request('POST','/abrir-caja',{'opening':'100'})[:2] == (303,'/caja')
     assert request('POST','/borrador',{f'p_{chur}':'2',f'p_{limo}':'1','customer_name':'Ana'})[0] == 303
-    customer = request('GET','/cliente')[2]
-    assert 'Bs 175.00' in customer and 'Ana' in customer and 'Monto a cancelar' in customer
+    assert 'Bs 175.00' in request('GET','/')[2]
+    assert request('GET','/cliente')[0] == 404
     status, location, _ = request('POST','/cobrar',{'payment':'QR'})
     assert status == 303 and location.startswith('/ficha/')
     assert 'Total pagado: Bs 175.00' in request('GET',location)[2]
-    assert 'Su ficha es' in request('GET','/cliente')[2]
     cash = request('GET','/caja')[2]
     assert 'Ventas QR: Bs 175.00' in cash and 'Efectivo esperado: Bs 100.00' in cash
     assert request('POST','/cobrar',{'payment':'QR'})[0] == 400
@@ -49,4 +48,4 @@ with tempfile.TemporaryDirectory() as tmp:
     server.shutdown()
     server.server_close()
     thread.join()
-print('Prueba integral OK: pedido, segunda pantalla, ficha, caja QR y medio turno')
+print('Prueba integral OK: pedido, ficha, caja QR y medio turno')

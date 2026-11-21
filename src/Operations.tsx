@@ -55,10 +55,6 @@ function OperationsWithAuth() {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('Todos')
   const [busy, setBusy] = useState(false)
-  const [lastTicket, setLastTicket] = useState<number | null>(null)
-  const [lastPaid, setLastPaid] = useState(false)
-  const [lastPaidTotal, setLastPaidTotal] = useState(0)
-  const [lastPaidItems, setLastPaidItems] = useState<{ name: string; presentation: string; quantity: number; price_cents: number; image_url: string | null }[]>([])
   const [paymentOrderId, setPaymentOrderId] = useState<string | null>(null)
   const [documentOrder, setDocumentOrder] = useState<{ order: Order; kind: 'ficha' | 'recibo' } | null>(null)
   const [theme, setTheme] = useState<'light' | 'dark'>(() => localStorage.getItem('novillo-theme') === 'dark' ? 'dark' : 'light')
@@ -102,14 +98,6 @@ function OperationsWithAuth() {
   const categories = ['Todos', ...categoriesWithProducts(products)]
   const visibleProducts = products.filter((p) => (category === 'Todos' || p.category === category) && `${p.name} ${p.presentation} ${p.category}`.toLocaleLowerCase('es').includes(search.toLocaleLowerCase('es')))
   const total = cartItems.reduce((sum, p) => sum + p.price_cents * cart[p.id], 0)
-  useEffect(() => {
-    const channel = new BroadcastChannel('novillo-pantalla-cliente')
-    const display = { items: lastTicket ? lastPaidItems : cartItems.map((p) => ({ name: p.name, presentation: p.presentation, quantity: cart[p.id], price_cents: p.price_cents, image_url: p.image_url })), total_cents: lastTicket ? lastPaidTotal : total, ticket_number: lastTicket, paid: lastPaid, updated_at: Date.now() }
-    channel.postMessage(display)
-    localStorage.setItem('novillo-pantalla-cliente', JSON.stringify(display))
-    channel.close()
-  }, [cart, products, total, lastTicket, lastPaid, lastPaidTotal, lastPaidItems])
-
   async function login(event: React.FormEvent) {
     event.preventDefault(); setBusy(true); setMessage('')
     try {
@@ -150,10 +138,6 @@ function OperationsWithAuth() {
       }) })
       if (!res.ok) throw new Error((await res.json()).error)
       const data = await res.json()
-      setLastPaidItems(data.order.items.map((item: Order['items'][number]) => ({ name: item.name, presentation: item.presentation, quantity: item.quantity, price_cents: item.unit_price_cents, image_url: null })))
-      setLastPaidTotal(data.order.total_cents)
-      setLastTicket(data.order.ticket_number)
-      setLastPaid(false)
       setCart({})
       setMessage(`Ficha Nº ${data.order.ticket_number} emitida. Cobro pendiente.`)
       setDocumentOrder({ kind: 'ficha', order: data.order })
@@ -172,10 +156,6 @@ function OperationsWithAuth() {
       const data = await res.json()
       const paidOrder = { ...order, ...data.order }
       setPaymentOrderId(null)
-      setLastTicket(order.ticket_number)
-      setLastPaid(true)
-      setLastPaidTotal(order.total_cents)
-      setLastPaidItems(order.items.map((i) => ({ name: i.name, presentation: i.presentation, quantity: i.quantity, price_cents: i.unit_price_cents, image_url: null })))
       setDocumentOrder({ kind: 'recibo', order: paidOrder })
       setMessage(`Cobro registrado. Recibo Nº ${order.ticket_number} listo.`)
       await refresh()
@@ -255,8 +235,8 @@ function OperationsWithAuth() {
     {staff.role !== 'cocina' && !cash && <form onSubmit={openCash} className="cash-open"><h3>Abrir caja</h3><label>Fondo inicial en Bs<input type="number" min="0" step="0.01" value={opening} onChange={(e) => setOpening(e.target.value)} /></label><button disabled={busy}>Abrir turno</button></form>}
     {staff.role !== 'cocina' && cash && showClosing && <div className="editor-stage"><button type="button" className="back-button" onClick={() => setShowClosing(false)}>← Volver a la operación</button><form onSubmit={closeCash} className="admin-form editor-form"><h3>Cerrar caja</h3><p className="form-help">Efectivo esperado: {money(cash.opening_cash_cents + cash.cash_sales_cents)} · Ventas QR: {money(cash.qr_sales_cents)}.</p><label>Efectivo contado en Bs<input required type="number" min="0" step="0.01" value={counted} onChange={(e) => setCounted(e.target.value)} /></label><div className="form-actions"><button disabled={busy}>Guardar arqueo y cerrar</button><button type="button" className="secondary" onClick={() => setShowClosing(false)}>Cancelar</button></div></form></div>}
     {staff.role !== 'cocina' && cash && !showClosing && operationView === 'venta' && <div className="order-layout sales-layout">
-      <div className="catalog-panel sales-catalog"><div className="sales-panel-heading"><div><span className="sales-eyebrow">CATÁLOGO</span><h3>Elige los productos</h3></div><span>{visibleProducts.length} disponibles</span></div><input className="product-search" type="search" placeholder="Buscar por nombre o categoría" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Buscar productos" /><div className="category-filter">{categories.map((c) => <button key={c} className={category === c ? 'selected' : ''} onClick={() => setCategory(c)}>{c}</button>)}</div><div className="product-list sales-product-grid">{visibleProducts.map((p) => <button type="button" key={p.id} className="sales-product-card" onClick={() => { setLastTicket(null); setLastPaid(false); setCart((current) => ({ ...current, [p.id]: (current[p.id] ?? 0) + 1 })) }}><span className="sales-product-image">{p.image_url ? <img src={p.image_url} alt="" loading="lazy" /> : <span className="sales-image-mark" aria-hidden="true">✦</span>}{cart[p.id] > 0 && <span className="sales-product-count">{cart[p.id]}</span>}</span><span className="sales-product-details"><span className="sales-product-category">{p.category}</span><span className="product-name">{p.name}<small>{p.presentation}</small></span><span className="sales-product-bottom"><strong>{money(p.price_cents)}</strong><span aria-hidden="true">＋</span></span></span></button>)}{visibleProducts.length === 0 && <p className="sales-empty">Aún no hay productos en esta categoría o búsqueda.</p>}</div></div>
-      <div className="cart sales-cart"><div className="sales-cart-heading"><div><span className="sales-eyebrow">NUEVO PEDIDO</span><h3>Pedido actual</h3></div><span>{cartItems.reduce((sum, p) => sum + cart[p.id], 0)} artículos</span></div>{cartItems.length === 0 && <div className="sales-cart-empty"><span aria-hidden="true">✦</span><strong>La mesa está lista</strong><p>Elige un producto para comenzar el pedido.</p></div>}{cartItems.map((p) => <div className="cart-row" key={p.id}><span>{p.name}<small>{p.presentation} · {cart[p.id]} × {money(p.price_cents)}</small></span><button aria-label={`Quitar un ${p.name}`} onClick={() => setCart((current) => ({ ...current, [p.id]: current[p.id] - 1 }))}>−</button><strong>{money(p.price_cents * cart[p.id])}</strong></div>)}<div className="sales-checkout"><div className="cart-total"><span>Total del pedido</span><strong>{money(total)}</strong></div><button disabled={busy || cartItems.length === 0} onClick={createOrder}>Registrar pedido y emitir ficha <span aria-hidden="true">↗</span></button><a href="/?vista=cliente" target="_blank" rel="noreferrer">Abrir pantalla del cliente ↗</a></div></div>
+      <div className="catalog-panel sales-catalog"><div className="sales-panel-heading"><div><span className="sales-eyebrow">CATÁLOGO</span><h3>Elige los productos</h3></div><span>{visibleProducts.length} disponibles</span></div><input className="product-search" type="search" placeholder="Buscar por nombre o categoría" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Buscar productos" /><div className="category-filter">{categories.map((c) => <button key={c} className={category === c ? 'selected' : ''} onClick={() => setCategory(c)}>{c}</button>)}</div><div className="product-list sales-product-grid">{visibleProducts.map((p) => <button type="button" key={p.id} className="sales-product-card" onClick={() => setCart((current) => ({ ...current, [p.id]: (current[p.id] ?? 0) + 1 }))}><span className="sales-product-image">{p.image_url ? <img src={p.image_url} alt="" loading="lazy" /> : <span className="sales-image-mark" aria-hidden="true">✦</span>}{cart[p.id] > 0 && <span className="sales-product-count">{cart[p.id]}</span>}</span><span className="sales-product-details"><span className="sales-product-category">{p.category}</span><span className="product-name">{p.name}<small>{p.presentation}</small></span><span className="sales-product-bottom"><strong>{money(p.price_cents)}</strong><span aria-hidden="true">＋</span></span></span></button>)}{visibleProducts.length === 0 && <p className="sales-empty">Aún no hay productos en esta categoría o búsqueda.</p>}</div></div>
+      <div className="cart sales-cart"><div className="sales-cart-heading"><div><span className="sales-eyebrow">NUEVO PEDIDO</span><h3>Pedido actual</h3></div><span>{cartItems.reduce((sum, p) => sum + cart[p.id], 0)} artículos</span></div>{cartItems.length === 0 && <div className="sales-cart-empty"><span aria-hidden="true">✦</span><strong>La mesa está lista</strong><p>Elige un producto para comenzar el pedido.</p></div>}{cartItems.map((p) => <div className="cart-row" key={p.id}><span>{p.name}<small>{p.presentation} · {cart[p.id]} × {money(p.price_cents)}</small></span><button aria-label={`Quitar un ${p.name}`} onClick={() => setCart((current) => ({ ...current, [p.id]: current[p.id] - 1 }))}>−</button><strong>{money(p.price_cents * cart[p.id])}</strong></div>)}<div className="sales-checkout"><div className="cart-total"><span>Total del pedido</span><strong>{money(total)}</strong></div><button disabled={busy || cartItems.length === 0} onClick={createOrder}>Registrar pedido y emitir ficha <span aria-hidden="true">↗</span></button></div></div>
     </div>}
     {(staff.role === 'cocina' || (operationView === 'fichas' && !showClosing)) && <section className="tickets-view">
       <div className="list-heading"><h3>Pedidos y cuentas</h3><span>{orders.filter((order) => !order.paid_at && order.status !== 'anulado').length} por cobrar · {orders.length} registros</span></div>

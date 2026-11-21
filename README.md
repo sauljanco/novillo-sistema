@@ -10,7 +10,7 @@ Sistema de gestión para el restaurante Novillo (Sacaba, Cochabamba).
 - [Menú inicial transcrito](menu-inicial.csv)
 - [Prototipo local Python/SQLite](PROTOTIPO.md)
 
-La base web usa React + TypeScript + Vite y se despliega en Vercel. Los datos se guardan en Neon. El sistema incluye atención y caja, segunda pantalla, resumen, personal y planilla, inventario, compras e inversión, catálogo, reportes y control de accesos. El proyecto Neon está en la organización gratuita Novillo Desarrollo. El prototipo local Python/SQLite sigue disponible como referencia de reglas del negocio.
+La base web usa React + TypeScript + Vite y se despliega en Vercel. Los datos se guardan en Neon. El sistema incluye ventas, fichas y recibos, caja, personal y planilla, inventario, compras e inversión, menú, reportes y control de accesos. El proyecto Neon está en la organización gratuita Novillo Desarrollo. El prototipo local Python/SQLite sigue disponible como referencia de reglas del negocio.
 
 ## Desarrollo web
 
@@ -38,7 +38,7 @@ El despliegue de Vercel usa el directorio raíz, preset **Vite**, comando `npm r
 
 `db/migrations/0007_order_then_payment.sql` separa pedido y cobro; `0008_legacy_paid_order.sql` conserva la clasificación de pagos de la versión anterior. En Ventas, el personal registra productos y emite una ficha numerada sin cobrar. Cuando el cliente pide la cuenta, abre ese pedido, selecciona efectivo o QR y confirma el cobro con `POST /api/order-payment`. La ficha y el recibo imprimible comparten el mismo número. El cobro se bloquea si el pedido ya está pagado o anulado. Los arqueos suman únicamente pedidos cobrados en la sesión correspondiente. Las categorías Cócteles y Postres quedan disponibles para agregar productos; inicialmente están vacías.
 
-La página `/?vista=operacion` es para el personal. La segunda pantalla `/?vista=cliente` se abre en otra ventana del mismo navegador y perfil, en el mismo equipo. Se sincroniza localmente mediante `BroadcastChannel` y `localStorage`; no transmite el resumen a otro dispositivo.
+La página `/?vista=operacion` es para el personal. El sitio público se muestra en la ruta principal.
 
 En Producción, Vercel necesita `VITE_NEON_AUTH_URL` (URL pública) y `NEON_AUTH_BASE_URL` (misma URL para verificar JWT), además de `DATABASE_URL` (Secret). El dominio de producción debe estar en la lista de dominios confiables de Neon Auth. La función utiliza `${NEON_AUTH_BASE_URL}/.well-known/jwks.json` y consulta el rol en cada solicitud.
 

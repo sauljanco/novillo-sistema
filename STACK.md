@@ -14,11 +14,11 @@ Decisión: React + TypeScript + Vite para la interfaz; Neon Postgres y Better Au
 
 | Capa | Tecnología | Uso |
 | --- | --- | --- |
-| Interfaz | React, TypeScript, Vite | Caja, cocina, administración y pantalla del cliente |
+| Interfaz | React, TypeScript, Vite | Ventas, caja, cocina y administración |
 | Navegación | React Router | Rutas según función |
 | Consultas | TanStack Query | Caché, refresco e invalidación |
 | Formularios | React Hook Form + Zod | Validación de importes, jornadas y compras |
-| Diseño | CSS/Tailwind CSS | Interfaz táctil para caja y vista grande para cliente |
+| Diseño | CSS/Tailwind CSS | Interfaz adaptable para ventas y administración |
 | Identidad | Neon Better Auth | Usuarios del restaurante y sesiones |
 | Base de datos | Neon Postgres | Pedidos, pagos, caja, personal e inventario |
 | Acceso a datos | Funciones de Vercel | API con permisos y operaciones de negocio; credenciales solo en servidor |
@@ -28,17 +28,12 @@ Decisión: React + TypeScript + Vite para la interfaz; Neon Postgres y Better Au
 
 No conectar Postgres directamente desde el navegador ni publicar `DATABASE_URL` como variable `VITE_*`. El frontend llama a una API pequeña en Vercel; esta valida sesión y rol. La ficha se asigna en la transacción que registra el pedido; el cobro se registra después con el mismo número y la base impide cobrar dos veces.
 
-## Segunda pantalla
-
-En São Paulo, Realtime no apareció como servicio disponible al crear el proyecto. La primera implementación consultará solo el pedido asignado a esa pantalla cada 2–3 segundos, mediante un endpoint de lectura limitado. Mostrará nombre o referencia, líneas, total a cancelar y ficha tras el cobro. No tendrá acceso a planilla, inventario ni caja. Si Neon habilita Realtime para esta región, se podrá evaluar su adopción después.
-
 ## Modelo de datos inicial
 
 - `users`/tablas administradas por Better Auth y `staff_profiles`: identidad y rol.
 - `products`, `product_prices`: menú e historial de precios.
 - `registers`, `cash_shifts`, `cash_movements`: caja y arqueo.
 - `orders`, `order_items`, `payments`, `tickets`: pedido, cobro y ficha.
-- `customer_displays`: pantalla asignada y pedido visible.
 - `staff`, `shift_templates`, `staff_schedules`, `attendance`, `pay_rates`, `payroll_payments`: personal.
 - `suppliers`, `purchases`, `purchase_items`: compras.
 - `inventory_items`, `stock_movements`, `recipes`, `recipe_items`: existencias y consumo.
@@ -52,14 +47,14 @@ Guardar importes como enteros en centavos o `numeric(12,2)`, nunca `float`. Marc
 - Preview de Vercel por pull request con una rama de base de datos aislada.
 - Producción con variables y permisos separados.
 
-Roles: administrador, caja, cocina y pantalla de cliente. Los permisos se comprueban en la API. Respaldos y restauración probados antes de operar con dinero real. Registrar auditoría de cambios de precio, devoluciones, cierre de caja, asistencia y ajustes de inventario.
+Roles: superadministrador, administrador, caja y cocina. Los permisos se comprueban en la API. Respaldos y restauración probados antes de operar con dinero real. Registrar auditoría de cambios de precio, devoluciones, cierre de caja, asistencia y ajustes de inventario.
 
 Variables previstas: `DATABASE_URL` y la configuración de Better Auth solo en servidor; la URL pública de la aplicación en Vercel. `.env.local` queda fuera de Git. CI ejecutará lint, tipos, pruebas y build.
 
 ## Fases
 
 1. Crear frontend React/Vite y migración inicial sobre el proyecto Neon Free.
-2. Autenticación, roles, menú, pedido, segunda pantalla, cobro transaccional, ficha, cocina y arqueo.
+2. Autenticación, roles, menú, pedido, cobro transaccional, ficha, cocina y arqueo.
 3. Programación, asistencia y planilla.
 4. Proveedores, compras, inventario, recetas y reportes.
 5. Integración de pagos y facturación fiscal si el cliente las requiere.
