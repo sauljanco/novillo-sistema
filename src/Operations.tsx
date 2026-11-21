@@ -10,6 +10,7 @@ import './sales.css'
 import './order-flow.css'
 import './theme-dark.css'
 import './sales-compact.css'
+import './design-refinement.css'
 
 type Product = { id: string; category: string; name: string; presentation: string; price_cents: number; image_url: string | null }
 type Staff = { display_name: string; role: 'superadministrador' | 'administrador' | 'caja' | 'cocina' }
@@ -75,6 +76,7 @@ function OperationsWithAuth() {
   const [receivedCash, setReceivedCash] = useState('')
   const [panel, setPanel] = useState('operacion')
   const [operationView, setOperationView] = useState<'venta' | 'fichas'>('venta')
+  const [mobileSalesView, setMobileSalesView] = useState<'menu' | 'pedido'>('menu')
   const [showCashDialog, setShowCashDialog] = useState(false)
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('Todos')
@@ -169,6 +171,7 @@ function OperationsWithAuth() {
     setPaymentOrderId(null)
     setMessage('')
     setOperationView('venta')
+    setMobileSalesView('menu')
   }
 
   function abandonAddition() {
@@ -293,8 +296,8 @@ function OperationsWithAuth() {
 
   return shell(<>
     {message && <p role="status" className="notice">{message}</p>}
-    {staff.role !== 'cocina' && operationView === 'venta' && <div className="order-layout sales-layout">
-      <div className="catalog-panel sales-catalog"><div className="sales-panel-heading"><div><span className="sales-eyebrow">CATÁLOGO</span><h3>Menú</h3></div></div><input className="product-search" type="search" placeholder="Buscar plato o bebida" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Buscar productos" /><div className="category-filter">{categories.map((c) => <button key={c} className={category === c ? 'selected' : ''} onClick={() => setCategory(c)}>{c}</button>)}</div><div className="product-list sales-product-grid">{visibleProducts.map((p) => <button type="button" key={p.id} className="sales-product-card" onClick={() => setCart((current) => ({ ...current, [p.id]: (current[p.id] ?? 0) + 1 }))}><span className="sales-product-image">{p.image_url ? <img src={p.image_url} alt="" loading="lazy" /> : <span className="sales-image-mark" aria-hidden="true">N</span>}{cart[p.id] > 0 && <span className="sales-product-count">{cart[p.id]}</span>}</span><span className="sales-product-details"><span className="sales-product-category">{p.category}</span><span className="product-name">{p.name}</span><small className="sales-product-presentation">{p.presentation}</small><span className="sales-product-bottom"><strong>{money(p.price_cents)}</strong><span aria-hidden="true">＋</span></span></span></button>)}{visibleProducts.length === 0 && <p className="sales-empty">Aún no hay productos en esta categoría o búsqueda.</p>}</div></div>
+    {staff.role !== 'cocina' && operationView === 'venta' && <><div className="sales-mobile-switch" role="tablist" aria-label="Secciones de venta"><button type="button" role="tab" aria-selected={mobileSalesView === 'menu'} className={mobileSalesView === 'menu' ? 'active' : ''} onClick={() => setMobileSalesView('menu')}>Menú</button><button type="button" role="tab" aria-selected={mobileSalesView === 'pedido'} className={mobileSalesView === 'pedido' ? 'active' : ''} onClick={() => setMobileSalesView('pedido')}>Pedido <span>{cartItems.reduce((sum, p) => sum + cart[p.id], 0)}</span></button></div><div className={`order-layout sales-layout mobile-${mobileSalesView}`}>
+      <div className="catalog-panel sales-catalog"><div className="sales-panel-heading"><div><h3>Menú</h3><span className="sales-menu-count">{visibleProducts.length} productos disponibles</span></div><input className="product-search" type="search" placeholder="Buscar plato o bebida" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Buscar productos" /></div><div className="category-filter">{categories.map((c) => <button key={c} className={category === c ? 'selected' : ''} onClick={() => setCategory(c)}>{c}</button>)}</div><div className="product-list sales-product-grid">{visibleProducts.map((p) => <button type="button" key={p.id} className="sales-product-card" onClick={() => setCart((current) => ({ ...current, [p.id]: (current[p.id] ?? 0) + 1 }))}><span className="sales-product-image">{p.image_url ? <img src={p.image_url} alt="" loading="lazy" /> : <span className="sales-image-mark" aria-hidden="true">N</span>}{cart[p.id] > 0 && <span className="sales-product-count">{cart[p.id]}</span>}</span><span className="sales-product-details"><span className="sales-product-category">{p.category}</span><span className="product-name">{p.name}</span><small className="sales-product-presentation">{p.presentation}</small><span className="sales-product-bottom"><strong>{money(p.price_cents)}</strong><span aria-hidden="true">＋</span></span></span></button>)}{visibleProducts.length === 0 && <p className="sales-empty">Aún no hay productos en esta categoría o búsqueda.</p>}</div></div>
       <div className="cart sales-cart">
         <div className="sales-cart-heading"><div><span className="sales-eyebrow">{editingOrder ? 'AMPLIAR PEDIDO' : 'NUEVO PEDIDO'}</span><h3>{editingOrder ? `Pedido Nº ${editingOrder.ticket_number}` : 'Pedido'}</h3></div><span>{cartItems.reduce((sum, p) => sum + cart[p.id], 0)} artículos</span></div>
         {editingOrder && <div className="sales-edit-context"><span>Mesa {editingOrder.table_number ?? 'sin asignar'} · Productos adicionales</span><button type="button" onClick={abandonAddition}>Volver</button></div>}
@@ -306,7 +309,7 @@ function OperationsWithAuth() {
           <button disabled={busy || (Boolean(cash) && (cartItems.length === 0 || (!editingOrder && tableNumber === null)))} onClick={cash ? createOrder : () => { setMessage(''); setShowCashDialog(true) }}>{cash ? editingOrder ? 'Agregar al pedido' : 'Registrar pedido' : 'Abrir caja para registrar pedidos'} <span aria-hidden="true">↗</span></button>
         </div>
       </div>
-    </div>}
+    </div></>}
     {(staff.role === 'cocina' || operationView === 'fichas') && <section className="tickets-view">
       <div className="list-heading"><h3>Pedidos y cuentas</h3><span>{orders.filter((order) => !order.paid_at && order.status !== 'anulado').length} por cobrar · {orders.length} registros</span></div>
       <div className="ticket-list">{orders.length === 0 && <p className="empty-tickets">Todavía no hay pedidos para este turno.</p>}

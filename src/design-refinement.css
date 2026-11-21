@@ -1,0 +1,87 @@
+/* Novillo Grill: clearer workspace hierarchy, based on the Figma POS exploration. */
+.app-shell{--pos-outline:color-mix(in srgb,var(--ink) 10%,transparent);--pos-shadow:0 14px 34px #1b0a2810}
+.app-sidebar{border-right:1px solid #34253c}
+.side-brand{letter-spacing:.045em;line-height:1.1}
+.app-sidebar .panel-nav button{font-weight:650}
+.app-sidebar .panel-nav button.selected{box-shadow:inset 3px 0 0 var(--brand-amber);background:#4f018b}
+.app-topbar{height:60px;background:#240b37;box-shadow:none}
+.topbar-title{font-size:18px;letter-spacing:-.04em}
+.work-panel{padding-top:18px}
+.work-panel .notice{padding:9px 13px;margin-bottom:14px;border-radius:9px;font-size:12px}
+.metric-grid>div,.overview-card,.admin-table-wrap,.admin-form,.ticket-list{box-shadow:var(--pos-shadow);border-radius:14px}
+.admin-table{font-variant-numeric:tabular-nums}
+.admin-table th{position:sticky;top:0;z-index:1;padding-block:12px;font-size:10px;letter-spacing:.085em}
+.admin-table td{padding-block:14px;font-size:12px;line-height:1.45}
+.admin-table tbody tr:nth-child(even){background:color-mix(in srgb,var(--surface) 93%,var(--brand-primary) 7%)}
+.panel-toolbar{margin-bottom:16px}
+.toolbar-actions{gap:9px}
+.work-panel .primary-add{min-height:40px;padding:9px 14px;font-size:12px;font-weight:800}
+.work-panel .panel-sections button{padding:10px 13px;font-weight:750}
+.sales-shell .work-panel{padding:14px clamp(14px,1.35vw,25px) 24px}
+.sales-shell .sales-layout{grid-template-columns:minmax(0,1fr) minmax(320px,340px);gap:12px}
+.sales-shell .sales-catalog,.sales-shell .sales-cart{border:1px solid var(--pos-outline);border-radius:13px;box-shadow:var(--pos-shadow)}
+.sales-shell .sales-catalog{padding:16px}
+.sales-shell .sales-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
+.sales-shell .sales-panel-heading h3{font-size:21px;line-height:1.1;font-weight:800;letter-spacing:-.045em}
+.sales-menu-count{display:block;margin-top:5px;color:var(--muted);font-size:11px;font-weight:650}
+.sales-shell .sales-catalog .product-search{width:min(100%,310px);min-height:39px;margin:0;padding:8px 13px;border-radius:9px;font-size:12px}
+.sales-shell .sales-catalog .category-filter{gap:6px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--pos-outline)}
+.sales-shell .sales-catalog .category-filter button{min-height:32px;padding:6px 11px;border:1px solid transparent;border-radius:7px;font-size:11px;font-weight:750}
+.sales-shell .sales-catalog .category-filter button:not(.selected){border-color:var(--pos-outline)}
+.sales-shell .sales-product-grid{grid-template-columns:repeat(auto-fill,minmax(172px,1fr));gap:10px;max-height:calc(100dvh - 212px);min-height:300px;padding:2px 4px 4px 2px}
+.sales-shell .work-panel .sales-product-grid .sales-product-card{height:190px;min-height:190px;border-radius:10px;box-shadow:none}
+.sales-shell .work-panel .sales-product-grid .sales-product-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px #1b0a2820}
+.sales-shell .sales-product-image{height:102px;flex-basis:102px}
+.sales-shell .sales-image-mark{width:53px;height:53px;font-size:33px}
+.sales-shell .sales-product-details{padding:9px 11px 10px}
+.sales-shell .sales-product-details .product-name{font-size:13px;line-height:1.25;font-weight:800}
+.sales-shell .sales-product-presentation{font-size:10.5px}
+.sales-shell .sales-product-bottom{padding-top:6px}
+.sales-shell .sales-product-bottom strong{font-size:13px!important;font-variant-numeric:tabular-nums}
+.sales-shell .sales-product-bottom>span{width:25px;height:25px;border-radius:7px}
+.sales-shell .sales-cart{top:73px;height:calc(100dvh - 88px);padding:17px}
+.sales-shell .sales-cart-heading{margin-bottom:6px;padding-bottom:13px}
+.sales-shell .sales-cart-heading h3{font-size:19px}
+.sales-shell .sales-cart-heading>span{font-size:11px}
+.sales-shell .sales-cart .cart-row{padding:11px 0;font-size:12px}
+.sales-shell .sales-cart .cart-row small{font-size:10px}
+.sales-shell .sales-table-grid button{min-height:35px;font-size:12px}
+.sales-shell .sales-cart .cart-total{padding-top:13px}
+.sales-shell .sales-cart .cart-total strong{font-size:24px;font-variant-numeric:tabular-nums}
+.sales-shell .sales-cart .sales-checkout>button{min-height:46px;font-size:12px}
+.sales-mobile-switch{display:none}
+
+:root[data-theme='dark'] .app-shell{--pos-outline:#3d3248;--pos-shadow:0 16px 36px #00000028}
+:root[data-theme='dark'] .app-topbar{background:#240b37}
+:root[data-theme='dark'] .sales-shell .sales-catalog,:root[data-theme='dark'] .sales-shell .sales-cart{background:#1c1723;border-color:var(--pos-outline)}
+:root[data-theme='dark'] .sales-shell .sales-catalog .product-search{background:#27202f;border-color:#4b3c58}
+:root[data-theme='dark'] .sales-shell .sales-catalog .category-filter button:not(.selected){background:#2c2334;color:#e1d2e8}
+:root[data-theme='dark'] .admin-table tbody tr:nth-child(even) td{background:#211b28}
+
+@media(max-width:1250px){
+  .sales-shell .sales-layout{grid-template-columns:minmax(0,1fr) 300px}
+  .sales-shell .sales-product-grid{grid-template-columns:repeat(auto-fill,minmax(148px,1fr))}
+}
+@media(max-width:900px){
+  .sales-mobile-switch{display:flex;gap:4px;margin-bottom:10px;padding:4px;border:1px solid var(--pos-outline);border-radius:10px;background:var(--surface)}
+  .sales-mobile-switch button{flex:1;min-height:38px;background:transparent;color:var(--muted);font-size:12px}
+  .sales-mobile-switch button.active{background:var(--brand-primary);color:#fff}
+  .sales-mobile-switch span{display:inline-grid;place-items:center;min-width:18px;height:18px;margin-left:5px;padding:0 4px;border-radius:9px;background:color-mix(in srgb,currentColor 16%,transparent);font-size:10px}
+  .sales-shell .sales-layout{display:block}
+  .sales-shell .sales-layout.mobile-menu .sales-cart,.sales-shell .sales-layout.mobile-pedido .sales-catalog{display:none}
+  .sales-shell .sales-cart{position:static;height:auto;min-height:calc(100dvh - 200px);max-height:none}
+  .sales-shell .sales-product-grid{max-height:none;min-height:0}
+}
+@media(max-width:700px){
+  .app-topbar{height:56px}
+  .sales-shell .sales-panel-heading{align-items:stretch;flex-direction:column;gap:10px}
+  .sales-shell .sales-catalog .product-search{width:100%}
+  .sales-shell .sales-product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .sales-shell .work-panel .sales-product-grid .sales-product-card{height:180px;min-height:180px}
+  .sales-shell .sales-product-image{height:91px;flex-basis:91px}
+  .sales-shell .sales-product-details .product-name{font-size:12px}
+  .sales-shell .sales-cart{min-height:calc(100dvh - 175px)}
+  .panel-toolbar{align-items:stretch}
+  .toolbar-actions{flex-wrap:wrap}
+}
+@media(max-width:380px){.sales-shell .sales-product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sales-shell .work-panel .sales-product-grid .sales-product-card{height:174px;min-height:174px}}
