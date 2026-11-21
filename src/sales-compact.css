@@ -23,7 +23,7 @@
 .sales-shell .sales-catalog .product-search { min-height: 37px; margin-bottom: 8px; padding: 8px 11px; font-size: 12px; }
 .sales-shell .sales-catalog .category-filter { flex-wrap: nowrap; gap: 5px; padding-bottom: 9px; scrollbar-width: thin; }
 .sales-shell .sales-catalog .category-filter button { padding: 6px 10px; font-size: 11px; }
-.sales-shell .sales-product-grid { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 8px; max-height: calc(100dvh - 282px); min-height: 260px; padding: 1px 3px 3px 1px; }
+.sales-shell .sales-product-grid { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 8px; max-height: calc(100dvh - 344px); min-height: 260px; padding: 1px 3px 3px 1px; }
 .sales-shell .work-panel .sales-product-grid .sales-product-card { min-height: 164px; height: 164px; border-radius: 9px; }
 .sales-shell .sales-product-image { height: 83px; flex: 0 0 83px; }
 .sales-shell .sales-image-mark { font-size: 42px; }
@@ -35,7 +35,7 @@
 .sales-shell .sales-product-bottom { padding-top: 4px; }
 .sales-shell .sales-product-bottom strong { font-size: 12px !important; }
 .sales-shell .sales-product-bottom > span { width: 21px; height: 21px; font-size: 15px; }
-.sales-shell .sales-cart { position: sticky; top: 76px; height: calc(100dvh - 174px); min-height: 400px; max-height: 760px; }
+.sales-shell .sales-cart { position: sticky; top: 76px; height: calc(100dvh - 214px); min-height: 400px; max-height: 760px; }
 .sales-shell .sales-cart-heading { padding-bottom: 11px; }
 .sales-shell .sales-cart-items { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
 .sales-shell .sales-cart-empty { min-height: 140px; }
