@@ -42,11 +42,17 @@
 .sales-shell .sales-product-bottom > span { width: 21px; height: 21px; font-size: 15px; }
 .sales-shell .sales-cart { position: sticky; top: 78px; height: calc(100dvh - 100px); min-height: 400px; max-height: 880px; }
 .sales-shell .sales-cart-heading { padding-bottom: 11px; }
+.sales-edit-context { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+.sales-edit-context button { padding: 3px 0; border: 0; background: transparent; color: var(--brand-primary); font-size: 11px; font-weight: 800; cursor: pointer; }
+.sales-edit-context button:hover { text-decoration: underline; }
 .sales-shell .sales-cart-items { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
 .sales-shell .sales-cart-empty { min-height: 140px; }
 .sales-shell .sales-cart .cart-row { padding: 10px 0; font-size: 11px; }
 .sales-shell .sales-cart .cart-row small { font-size: 9px; }
 .sales-shell .sales-checkout { padding-top: 10px; }
+.sales-addition-totals { display: grid; gap: 5px; padding: 0 0 12px; color: var(--muted); font-size: 11px; }
+.sales-addition-totals span { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.sales-addition-totals strong { color: var(--ink); font-size: 12px; }
 .sales-table-picker { min-width: 0; margin: 0 0 12px; padding: 0; border: 0; }
 .sales-table-picker legend { width: 100%; margin-bottom: 8px; color: var(--ink); font-size: 12px; font-weight: 800; }
 .sales-table-picker legend span { float: right; color: var(--muted); font-size: 10px; font-weight: 600; }

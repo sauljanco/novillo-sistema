@@ -11,6 +11,8 @@
 .payment-badge.paid{background:#e5f4ea;color:#26794c}
 .payment-badge.canceled{background:var(--surface-selected);color:var(--muted)}
 .order-record-actions .secondary-utility{padding:8px 11px}
+.order-record-actions .add-items-button{border-color:var(--brand-primary);color:var(--brand-primary)}
+.order-record-actions .add-items-button:hover:not(:disabled){background:var(--surface-selected)}
 .order-record-actions .cancel-order-button{margin-left:auto;color:var(--muted)}
 .order-record-actions .cancel-order-button:hover:not(:disabled){color:#ad3f44}
 .order-collection{display:flex;align-items:end;gap:12px;flex-wrap:wrap;padding:16px;background:var(--surface-selected);border:1px solid var(--line);border-radius:11px}

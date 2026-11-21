@@ -40,6 +40,8 @@ El despliegue de Vercel usa el directorio raíz, preset **Vite**, comando `npm r
 
 `db/migrations/0009_tables_and_cancellation.sql` agrega la mesa (1 a 12) al pedido y registra quién canceló una ficha pendiente. La mesa se elige al registrar el pedido y aparece en la ficha, la lista y el recibo. Ventas ofrece registrar, ver ficha o recibo, cobrar y cancelar pedidos sin pago; no requiere estados de preparación. Las fichas anteriores pueden carecer de número de mesa.
 
+`db/migrations/0010_order_additions.sql` permite ampliar una ficha pendiente desde **Pedidos → Agregar productos**. Las nuevas líneas conservan el número de ficha y la mesa, usan los precios vigentes al momento de agregarse y se suman al total antes del cobro. La operación es atómica y se rechaza si la caja está cerrada o si la ficha ya fue cobrada o cancelada. Al cobrar, la base comprueba que el total aún coincide con la cuenta mostrada al cajero; si cambió, el panel actualiza los datos para revisarlos antes de confirmar.
+
 La página `/?vista=operacion` es para el personal. El sitio público se muestra en la ruta principal.
 
 En Producción, Vercel necesita `VITE_NEON_AUTH_URL` (URL pública) y `NEON_AUTH_BASE_URL` (misma URL para verificar JWT), además de `DATABASE_URL` (Secret). El dominio de producción debe estar en la lista de dominios confiables de Neon Auth. La función utiliza `${NEON_AUTH_BASE_URL}/.well-known/jwks.json` y consulta el rol en cada solicitud.

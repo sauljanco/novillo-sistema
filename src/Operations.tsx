@@ -55,6 +55,7 @@ function OperationsWithAuth() {
   const [orders, setOrders] = useState<Order[]>([])
   const [cart, setCart] = useState<Record<string, number>>({})
   const [tableNumber, setTableNumber] = useState<number | null>(null)
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null)
   const [opening, setOpening] = useState('0')
   const [counted, setCounted] = useState('0')
   const [method, setMethod] = useState<'efectivo' | 'qr'>('efectivo')
@@ -113,6 +114,7 @@ function OperationsWithAuth() {
   const categories = ['Todos', ...categoriesWithProducts(products)]
   const visibleProducts = products.filter((p) => (category === 'Todos' || p.category === category) && `${p.name} ${p.presentation} ${p.category}`.toLocaleLowerCase('es').includes(search.toLocaleLowerCase('es')))
   const total = cartItems.reduce((sum, p) => sum + p.price_cents * cart[p.id], 0)
+  const currentEditingOrder = editingOrder ? orders.find((order) => order.id === editingOrder.id) ?? editingOrder : null
   async function login(event: React.FormEvent) {
     event.preventDefault(); setBusy(true); setMessage('')
     try {
@@ -144,20 +146,39 @@ function OperationsWithAuth() {
     finally { setBusy(false) }
   }
 
+  function startAddition(order: Order) {
+    setEditingOrder(order)
+    setCart({})
+    setTableNumber(order.table_number)
+    setSearch('')
+    setCategory('Todos')
+    setPaymentOrderId(null)
+    setMessage('')
+    setOperationView('venta')
+  }
+
+  function abandonAddition() {
+    setEditingOrder(null)
+    setCart({})
+    setTableNumber(null)
+    setOperationView('fichas')
+  }
+
   async function createOrder() {
-    if (!cash || cartItems.length === 0 || tableNumber === null) return
+    if (!cash || cartItems.length === 0 || (!editingOrder && tableNumber === null)) return
     setBusy(true); setMessage('')
     try {
-      const res = await authorizedFetch('/api/orders', { method: 'POST', body: JSON.stringify({
+      const res = await authorizedFetch(editingOrder ? '/api/order-items' : '/api/orders', { method: 'POST', body: JSON.stringify({
+        ...(editingOrder ? { order_id: Number(editingOrder.id) } : { table_number: tableNumber }),
         cash_session_id: Number(cash.id),
-        table_number: tableNumber,
         items: cartItems.map((p) => ({ product_id: Number(p.id), quantity: cart[p.id] })),
       }) })
       if (!res.ok) throw new Error((await res.json()).error)
-      const data = await res.json()
+      const data: { order: Order } = await res.json()
       setCart({})
       setTableNumber(null)
-      setMessage(`Ficha Nº ${data.order.ticket_number} emitida. Cobro pendiente.`)
+      setEditingOrder(null)
+      setMessage(editingOrder ? `Productos añadidos al pedido Nº ${data.order.ticket_number}.` : `Ficha Nº ${data.order.ticket_number} emitida. Cobro pendiente.`)
       setDocumentOrder({ kind: 'ficha', order: data.order })
       setOperationView('fichas')
       await refresh()
@@ -169,15 +190,15 @@ function OperationsWithAuth() {
     if (!cash || order.paid_at) return
     setBusy(true); setMessage('')
     try {
-      const res = await authorizedFetch('/api/order-payment', { method: 'POST', body: JSON.stringify({ order_id: Number(order.id), cash_session_id: Number(cash.id), payment_method: method }) })
+      const res = await authorizedFetch('/api/order-payment', { method: 'POST', body: JSON.stringify({ order_id: Number(order.id), cash_session_id: Number(cash.id), payment_method: method, expected_total_cents: order.total_cents }) })
       if (!res.ok) throw new Error((await res.json()).error)
       const data = await res.json()
-      const paidOrder = { ...order, ...data.order }
+      const paidOrder = data.order as Order
       setPaymentOrderId(null)
       setDocumentOrder({ kind: 'recibo', order: paidOrder })
       setMessage(`Cobro registrado. Recibo Nº ${order.ticket_number} listo.`)
       await refresh()
-    } catch (error) { setMessage(error instanceof Error ? error.message : 'No se pudo registrar el cobro') }
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'No se pudo registrar el cobro'); await refresh() }
     finally { setBusy(false) }
   }
 
@@ -246,7 +267,7 @@ function OperationsWithAuth() {
   const shell = (content: React.ReactNode, title: string) => <div className={`app-shell${panel === 'operacion' ? ' sales-shell' : ''}`}>
     <aside className="app-sidebar"><a className="side-brand" href="/"><BrandLogo /><span>NOVILLO GRILL</span></a>{navigation}<div className="side-profile"><span className="profile-avatar">{staff.display_name.slice(0, 2).toUpperCase()}</span><span><strong>{staff.display_name}</strong><small>{staff.role === 'superadministrador' ? 'Superadministrador' : staff.role === 'caja' ? 'Caja y ventas' : staff.role}</small></span></div></aside>
     <div className="app-main"><header className="app-topbar"><h1 className="topbar-title">{title}</h1>
-      {panel === 'operacion' && staff.role !== 'cocina' && <div className="sales-view-switch" role="tablist" aria-label="Vistas de ventas"><button type="button" role="tab" aria-selected={operationView === 'venta'} className={operationView === 'venta' ? 'active' : ''} onClick={() => setOperationView('venta')}>Nuevo pedido</button><button type="button" role="tab" aria-selected={operationView === 'fichas'} className={operationView === 'fichas' ? 'active' : ''} onClick={() => setOperationView('fichas')}>Pedidos <span className="sales-tab-count">{orders.length}</span></button></div>}
+      {panel === 'operacion' && staff.role !== 'cocina' && <div className="sales-view-switch" role="tablist" aria-label="Vistas de ventas"><button type="button" role="tab" aria-selected={operationView === 'venta'} className={operationView === 'venta' ? 'active' : ''} onClick={() => setOperationView('venta')}>{editingOrder ? `Ampliar Nº ${editingOrder.ticket_number}` : 'Nuevo pedido'}</button><button type="button" role="tab" aria-selected={operationView === 'fichas'} className={operationView === 'fichas' ? 'active' : ''} onClick={() => setOperationView('fichas')}>Pedidos <span className="sales-tab-count">{orders.length}</span></button></div>}
       <div className="topbar-right">{panel === 'operacion' && staff.role !== 'cocina' && <button type="button" className={`cash-control${cash ? ' is-open' : ''}`} onClick={() => { setMessage(''); setShowCashDialog(true) }} aria-label={cash ? `Gestionar caja abierta Nº ${cash.id}` : 'Abrir caja'}><span className="cash-control-dot" aria-hidden="true" />{cash ? `Caja Nº ${cash.id}` : 'Abrir caja'}</button>}<button className="theme-toggle" aria-label={theme === 'light' ? 'Activar modo oscuro' : 'Activar modo claro'} title={theme === 'light' ? 'Modo oscuro' : 'Modo claro'} onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}><PanelIcon name={theme === 'light' ? 'moon' : 'sun'} /></button><button className="logout-button" onClick={() => neonAuth!.signOut()}><PanelIcon name="logout" /> <span>Salir</span></button></div>
     </header><main className="work-panel">{content}</main></div>
   </div>
@@ -258,12 +279,14 @@ function OperationsWithAuth() {
     {staff.role !== 'cocina' && operationView === 'venta' && <div className="order-layout sales-layout">
       <div className="catalog-panel sales-catalog"><div className="sales-panel-heading"><div><span className="sales-eyebrow">CATÁLOGO</span><h3>Menú</h3></div></div><input className="product-search" type="search" placeholder="Buscar plato o bebida" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Buscar productos" /><div className="category-filter">{categories.map((c) => <button key={c} className={category === c ? 'selected' : ''} onClick={() => setCategory(c)}>{c}</button>)}</div><div className="product-list sales-product-grid">{visibleProducts.map((p) => <button type="button" key={p.id} className="sales-product-card" onClick={() => setCart((current) => ({ ...current, [p.id]: (current[p.id] ?? 0) + 1 }))}><span className="sales-product-image">{p.image_url ? <img src={p.image_url} alt="" loading="lazy" /> : <span className="sales-image-mark" aria-hidden="true">N</span>}{cart[p.id] > 0 && <span className="sales-product-count">{cart[p.id]}</span>}</span><span className="sales-product-details"><span className="sales-product-category">{p.category}</span><span className="product-name">{p.name}</span><small className="sales-product-presentation">{p.presentation}</small><span className="sales-product-bottom"><strong>{money(p.price_cents)}</strong><span aria-hidden="true">＋</span></span></span></button>)}{visibleProducts.length === 0 && <p className="sales-empty">Aún no hay productos en esta categoría o búsqueda.</p>}</div></div>
       <div className="cart sales-cart">
-        <div className="sales-cart-heading"><div><span className="sales-eyebrow">NUEVO PEDIDO</span><h3>Pedido</h3></div><span>{cartItems.reduce((sum, p) => sum + cart[p.id], 0)} artículos</span></div>
-        <div className="sales-cart-items">{cartItems.length === 0 && <div className="sales-cart-empty"><strong>Aún no hay platos</strong><p>Selecciona productos del menú.</p></div>}{cartItems.map((p) => <div className="cart-row" key={p.id}><span>{p.name}<small>{p.presentation} · {cart[p.id]} × {money(p.price_cents)}</small></span><button aria-label={`Quitar un ${p.name}`} onClick={() => setCart((current) => ({ ...current, [p.id]: current[p.id] - 1 }))}>−</button><strong>{money(p.price_cents * cart[p.id])}</strong></div>)}</div>
+        <div className="sales-cart-heading"><div><span className="sales-eyebrow">{editingOrder ? 'AMPLIAR PEDIDO' : 'NUEVO PEDIDO'}</span><h3>{editingOrder ? `Pedido Nº ${editingOrder.ticket_number}` : 'Pedido'}</h3></div><span>{cartItems.reduce((sum, p) => sum + cart[p.id], 0)} artículos</span></div>
+        {editingOrder && <div className="sales-edit-context"><span>Mesa {editingOrder.table_number ?? 'sin asignar'} · Productos adicionales</span><button type="button" onClick={abandonAddition}>Volver</button></div>}
+        <div className="sales-cart-items">{cartItems.length === 0 && <div className="sales-cart-empty"><strong>{editingOrder ? 'Añade productos' : 'Aún no hay platos'}</strong><p>Selecciona productos del menú.</p></div>}{cartItems.map((p) => <div className="cart-row" key={p.id}><span>{p.name}<small>{p.presentation} · {cart[p.id]} × {money(p.price_cents)}</small></span><button aria-label={`Quitar un ${p.name}`} onClick={() => setCart((current) => ({ ...current, [p.id]: current[p.id] - 1 }))}>−</button><strong>{money(p.price_cents * cart[p.id])}</strong></div>)}</div>
         <div className="sales-checkout">
-          <fieldset className="sales-table-picker"><legend>Mesa <span>Selecciona una</span></legend><div className="sales-table-grid">{Array.from({ length: 12 }, (_, index) => index + 1).map((number) => <button key={number} type="button" className={tableNumber === number ? 'selected' : ''} aria-pressed={tableNumber === number} aria-label={`Mesa ${number}`} onClick={() => setTableNumber(number)}>{number}</button>)}</div></fieldset>
-          <div className="cart-total"><span>Total del pedido</span><strong>{money(total)}</strong></div>
-          <button disabled={busy || (Boolean(cash) && (cartItems.length === 0 || tableNumber === null))} onClick={cash ? createOrder : () => { setMessage(''); setShowCashDialog(true) }}>{cash ? 'Registrar pedido' : 'Abrir caja para registrar pedidos'} <span aria-hidden="true">↗</span></button>
+          {!editingOrder && <fieldset className="sales-table-picker"><legend>Mesa <span>Selecciona una</span></legend><div className="sales-table-grid">{Array.from({ length: 12 }, (_, index) => index + 1).map((number) => <button key={number} type="button" className={tableNumber === number ? 'selected' : ''} aria-pressed={tableNumber === number} aria-label={`Mesa ${number}`} onClick={() => setTableNumber(number)}>{number}</button>)}</div></fieldset>}
+          {currentEditingOrder && <div className="sales-addition-totals"><span>Pedido actual <strong>{money(currentEditingOrder.total_cents)}</strong></span><span>Productos añadidos <strong>{money(total)}</strong></span></div>}
+          <div className="cart-total"><span>{editingOrder ? 'Nuevo total' : 'Total del pedido'}</span><strong>{money((currentEditingOrder?.total_cents ?? 0) + total)}</strong></div>
+          <button disabled={busy || (Boolean(cash) && (cartItems.length === 0 || (!editingOrder && tableNumber === null)))} onClick={cash ? createOrder : () => { setMessage(''); setShowCashDialog(true) }}>{cash ? editingOrder ? 'Agregar al pedido' : 'Registrar pedido' : 'Abrir caja para registrar pedidos'} <span aria-hidden="true">↗</span></button>
         </div>
       </div>
     </div>}
@@ -274,6 +297,7 @@ function OperationsWithAuth() {
           <div className="order-record-main"><strong>Nº {order.ticket_number}</strong><span>{order.table_number ? `Mesa ${order.table_number} · ` : ''}{order.items.map((item) => `${item.quantity} ${item.name}`).join(', ')}</span><b>{money(order.total_cents)}</b></div>
           <div className="order-record-meta"><span className={`payment-badge ${order.status === 'anulado' ? 'canceled' : order.paid_at ? 'paid' : 'pending'}`}>{order.status === 'anulado' ? 'Cancelado' : order.paid_at ? `Pagado · ${order.payment_method === 'qr' ? 'QR' : 'efectivo'}` : 'Pendiente de cobro'}</span><span>{new Date(order.service_date).toLocaleDateString('es-BO', { timeZone: 'UTC' })}{order.table_number ? ` · Mesa ${order.table_number}` : ''}</span></div>
           <div className="order-record-actions"><button type="button" className="secondary-utility" onClick={() => setDocumentOrder({ order, kind: order.paid_at ? 'recibo' : 'ficha' })}>Ver {order.paid_at ? 'recibo' : 'ficha'}</button>
+            {staff.role !== 'cocina' && cash && !order.paid_at && order.status !== 'anulado' && <button type="button" className="secondary-utility add-items-button" onClick={() => startAddition(order)}>Agregar productos</button>}
             {staff.role !== 'cocina' && cash && !order.paid_at && order.status !== 'anulado' && <button type="button" onClick={() => setPaymentOrderId(paymentOrderId === order.id ? null : order.id)}>Cobrar pedido</button>}
             {staff.role !== 'cocina' && !order.paid_at && order.status !== 'anulado' && <button type="button" className="secondary-utility cancel-order-button" disabled={busy} onClick={() => cancelOrder(order)}>Cancelar pedido</button>}
           </div>
