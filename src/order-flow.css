@@ -34,5 +34,26 @@
 .document-lines>div{display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:12px}
 .document-lines small{display:block;color:#665b6c}
 .document-total{display:flex;justify-content:space-between;gap:10px;font-size:16px;font-weight:800}
+.receipt-document{font-family:Arial,Helvetica,sans-serif;color:#111;padding:24px 19px;font-size:12px;line-height:1.35}
+.receipt-header{display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px}
+.receipt-header .novillo-logo{display:block;width:54mm;max-width:100%;height:auto;margin:0 auto;filter:grayscale(1) contrast(1.5)}
+.receipt-header strong{font-size:14px;letter-spacing:.08em}
+.receipt-header span{font-size:10px}
+.receipt-rule{border-top:1px dashed #111;margin:13px 0}
+.receipt-meta{display:grid;grid-template-columns:42% 58%;gap:4px 0;align-items:start}
+.receipt-meta>strong{text-align:right;font-weight:700;overflow-wrap:anywhere}
+.receipt-items-heading{display:flex;justify-content:space-between;gap:8px;font-size:10px;font-weight:700;letter-spacing:.04em}
+.receipt-items{display:grid;gap:12px;padding-top:10px}
+.receipt-item{display:flex;justify-content:space-between;align-items:start;gap:8px;break-inside:avoid}
+.receipt-item>div{min-width:0}
+.receipt-item strong{font-weight:700}
+.receipt-item>strong{white-space:nowrap}
+.receipt-item small{display:block;font-size:10px;color:#333;margin-top:2px}
+.receipt-summary{display:grid;grid-template-columns:1fr auto;gap:7px}
+.receipt-summary strong{text-align:right}
+.receipt-grand-label,.receipt-grand-value{font-size:18px;font-weight:800;border-top:1px solid #111;padding-top:8px}
+.receipt-footer{display:grid;gap:3px;text-align:center;border-top:1px dashed #111;margin-top:14px;padding-top:14px;font-size:11px}
+.receipt-footer span{font-size:10px}
+.order-collection label small{display:block;margin-top:5px;color:var(--muted);font-size:11px}
 @media(max-width:600px){.order-record-main{grid-template-columns:1fr auto}.order-record-main>span{grid-column:1/-1;grid-row:2;white-space:normal}.order-record-main>b{grid-column:2;grid-row:1}.order-collection>*{width:100%}}
-@media print{@page{size:80mm auto;margin:5mm}body *{visibility:hidden!important}.app-shell{display:block!important;min-height:0!important}.app-main,.work-panel{padding:0!important;margin:0!important;min-height:0!important}.order-document,.order-document *{visibility:visible!important}.order-document{position:fixed;left:0;top:0;width:70mm;max-width:70mm;margin:0;padding:0;box-shadow:none;border-radius:0;print-color-adjust:exact}.document-overlay,.document-preview{display:block;position:static;padding:0;margin:0;background:transparent;box-shadow:none;overflow:visible}.document-actions{display:none!important}}
+@media print{@page{size:80mm auto;margin:5mm}html,body,#root{height:auto!important;min-height:0!important;overflow:visible!important}body *{visibility:hidden!important}.app-shell{display:block!important;min-height:0!important}.app-main,.work-panel{padding:0!important;margin:0!important;min-height:0!important}.order-document,.order-document *{visibility:visible!important}.order-document{position:absolute;left:0;top:0;width:70mm;max-width:70mm;margin:0;padding:0;box-shadow:none;border-radius:0;print-color-adjust:exact}.document-overlay,.document-preview{display:block;position:static;padding:0;margin:0;background:transparent;box-shadow:none;overflow:visible}.document-actions{display:none!important}.receipt-document{font-size:11px}.receipt-header .novillo-logo{width:40mm}.receipt-item{break-inside:avoid}}

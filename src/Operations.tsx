@@ -14,23 +14,36 @@ import './sales-compact.css'
 type Product = { id: string; category: string; name: string; presentation: string; price_cents: number; image_url: string | null }
 type Staff = { display_name: string; role: 'superadministrador' | 'administrador' | 'caja' | 'cocina' }
 type Cash = { id: string; opening_cash_cents: number; cash_sales_cents: number; qr_sales_cents: number }
-type Order = { id: string; service_date: string; ticket_number: number; table_number: number | null; total_cents: number; payment_method: string | null; paid_at: string | null; created_at: string; status: string; items: { name: string; presentation: string; quantity: number; unit_price_cents: number; line_total_cents: number }[] }
+type Order = { id: string; service_date: string; ticket_number: number; table_number: number | null; total_cents: number; payment_method: string | null; paid_at: string | null; created_at: string; status: string; cashier_name?: string | null; amount_received_cents?: number | null; change_cents?: number | null; items: { name: string; presentation: string; quantity: number; unit_price_cents: number; line_total_cents: number }[] }
 const money = (cents: number) => `Bs ${(cents / 100).toFixed(2)}`
 function OrderDocument({ order, kind, onClose }: { order: Order; kind: 'ficha' | 'recibo'; onClose: () => void }) {
   const timestamp = kind === 'recibo' ? order.paid_at : order.created_at
+  const paidAt = timestamp ? new Date(timestamp) : null
   return <div className="document-overlay" role="dialog" aria-modal="true" aria-label={kind === 'ficha' ? 'Ficha de pedido' : 'Recibo de pago'}>
     <div className="document-preview">
       <div className="document-actions"><button type="button" className="secondary-utility" onClick={onClose}>Cerrar</button><button type="button" onClick={() => window.print()}>Imprimir {kind}</button></div>
-      <div className="order-document">
+      {kind === 'ficha' ? <div className="order-document">
         <div className="document-brand">NOVILLO GRILL</div>
-        <div className="document-subtitle">{kind === 'ficha' ? 'FICHA DE PEDIDO' : 'RECIBO DE PAGO'}</div>
+        <div className="document-subtitle">FICHA DE PEDIDO</div>
         <strong className="document-number">Nº {order.ticket_number}</strong>
         {order.table_number && <strong className="document-table">MESA {order.table_number}</strong>}
         <p>{timestamp ? new Date(timestamp).toLocaleString('es-BO', { timeZone: 'America/La_Paz' }) : ''}</p>
         <div className="document-lines">{order.items.map((item, index) => <div key={`${item.name}-${index}`}><span>{item.quantity} × {item.name}<small>{item.presentation}</small></span><strong>{money(item.line_total_cents)}</strong></div>)}</div>
-        <div className="document-total"><span>{kind === 'ficha' ? 'Total del pedido' : 'Total pagado'}</span><strong>{money(order.total_cents)}</strong></div>
-        <p>{order.status === 'anulado' ? 'Pedido cancelado.' : kind === 'ficha' ? 'Pago pendiente · Conserva este número para solicitar la cuenta.' : `Pagado con ${order.payment_method === 'qr' ? 'QR' : 'efectivo'} · Gracias por tu visita.`}</p>
-      </div>
+        <div className="document-total"><span>Total del pedido</span><strong>{money(order.total_cents)}</strong></div>
+        <p>{order.status === 'anulado' ? 'Pedido cancelado.' : 'Pago pendiente · Conserva este número para solicitar la cuenta.'}</p>
+      </div> : <div className="order-document receipt-document">
+        <header className="receipt-header"><BrandLogo /><strong>RECIBO DE PAGO</strong><span>Av. Villazón, entre Padilla y<br />Beneméritos de la Patria · Sacaba</span></header>
+        <div className="receipt-rule" />
+        <div className="receipt-meta"><span>Recibo Nº</span><strong>{String(order.id).padStart(6, '0')}</strong><span>Pedido Nº</span><strong>{order.ticket_number}</strong><span>Fecha</span><strong>{paidAt?.toLocaleDateString('es-BO', { timeZone: 'America/La_Paz' }) || '—'}</strong><span>Hora</span><strong>{paidAt?.toLocaleTimeString('es-BO', { timeZone: 'America/La_Paz', hour: '2-digit', minute: '2-digit' }) || '—'}</strong><span>Cajero</span><strong>{order.cashier_name || '—'}</strong>{order.table_number && <><span>Mesa</span><strong>{order.table_number}</strong></>}</div>
+        <div className="receipt-rule" />
+        <div className="receipt-items-heading"><span>DESCRIPCIÓN</span><span>IMPORTE</span></div>
+        <div className="receipt-items">{order.items.map((item, index) => <div className="receipt-item" key={`${item.name}-${index}`}><div><strong>{item.name}</strong>{item.presentation && <small>{item.presentation}</small>}<small>{item.quantity} × {money(item.unit_price_cents)}</small></div><strong>{money(item.line_total_cents)}</strong></div>)}</div>
+        <div className="receipt-rule" />
+        <div className="receipt-summary"><span>Subtotal</span><strong>{money(order.total_cents)}</strong><span className="receipt-grand-label">TOTAL</span><strong className="receipt-grand-value">{money(order.total_cents)}</strong></div>
+        <div className="receipt-rule" />
+        <div className="receipt-meta receipt-payment"><span>Método de pago</span><strong>{order.payment_method === 'qr' ? 'QR' : 'Efectivo'}</strong><span>Monto pagado</span><strong>{money(order.total_cents)}</strong>{order.payment_method === 'efectivo' && order.amount_received_cents != null && <><span>Efectivo recibido</span><strong>{money(order.amount_received_cents)}</strong><span>Cambio</span><strong>{money(order.change_cents ?? 0)}</strong></>}<span>Tipo de pedido</span><strong>Consumo en mesa</strong></div>
+        <footer className="receipt-footer"><strong>¡Gracias por visitarnos!</strong><span>Novillo Grill · Sacaba</span></footer>
+      </div>}
     </div>
   </div>
 }
@@ -59,6 +72,7 @@ function OperationsWithAuth() {
   const [opening, setOpening] = useState('0')
   const [counted, setCounted] = useState('0')
   const [method, setMethod] = useState<'efectivo' | 'qr'>('efectivo')
+  const [receivedCash, setReceivedCash] = useState('')
   const [panel, setPanel] = useState('operacion')
   const [operationView, setOperationView] = useState<'venta' | 'fichas'>('venta')
   const [showCashDialog, setShowCashDialog] = useState(false)
@@ -188,15 +202,18 @@ function OperationsWithAuth() {
 
   async function collectOrder(order: Order) {
     if (!cash || order.paid_at) return
+    const receivedCents = method === 'qr' ? order.total_cents : Math.round(Number(receivedCash) * 100)
+    if (!Number.isSafeInteger(receivedCents) || receivedCents < order.total_cents) { setMessage('El efectivo recibido debe cubrir el total del pedido.'); return }
     setBusy(true); setMessage('')
     try {
-      const res = await authorizedFetch('/api/order-payment', { method: 'POST', body: JSON.stringify({ order_id: Number(order.id), cash_session_id: Number(cash.id), payment_method: method, expected_total_cents: order.total_cents }) })
+      const res = await authorizedFetch('/api/order-payment', { method: 'POST', body: JSON.stringify({ order_id: Number(order.id), cash_session_id: Number(cash.id), payment_method: method, expected_total_cents: order.total_cents, amount_received_cents: receivedCents }) })
       if (!res.ok) throw new Error((await res.json()).error)
       const data = await res.json()
       const paidOrder = data.order as Order
       setPaymentOrderId(null)
+      setReceivedCash('')
       setDocumentOrder({ kind: 'recibo', order: paidOrder })
-      setMessage(`Cobro registrado. Recibo Nº ${order.ticket_number} listo.`)
+      setMessage(`Cobro registrado. Recibo Nº ${paidOrder.id} listo.`)
       await refresh()
     } catch (error) { setMessage(error instanceof Error ? error.message : 'No se pudo registrar el cobro'); await refresh() }
     finally { setBusy(false) }
@@ -298,10 +315,10 @@ function OperationsWithAuth() {
           <div className="order-record-meta"><span className={`payment-badge ${order.status === 'anulado' ? 'canceled' : order.paid_at ? 'paid' : 'pending'}`}>{order.status === 'anulado' ? 'Cancelado' : order.paid_at ? `Pagado · ${order.payment_method === 'qr' ? 'QR' : 'efectivo'}` : 'Pendiente de cobro'}</span><span>{new Date(order.service_date).toLocaleDateString('es-BO', { timeZone: 'UTC' })}{order.table_number ? ` · Mesa ${order.table_number}` : ''}</span></div>
           <div className="order-record-actions"><button type="button" className="secondary-utility" onClick={() => setDocumentOrder({ order, kind: order.paid_at ? 'recibo' : 'ficha' })}>Ver {order.paid_at ? 'recibo' : 'ficha'}</button>
             {staff.role !== 'cocina' && cash && !order.paid_at && order.status !== 'anulado' && <button type="button" className="secondary-utility add-items-button" onClick={() => startAddition(order)}>Agregar productos</button>}
-            {staff.role !== 'cocina' && cash && !order.paid_at && order.status !== 'anulado' && <button type="button" onClick={() => setPaymentOrderId(paymentOrderId === order.id ? null : order.id)}>Cobrar pedido</button>}
+            {staff.role !== 'cocina' && cash && !order.paid_at && order.status !== 'anulado' && <button type="button" onClick={() => { setPaymentOrderId(paymentOrderId === order.id ? null : order.id); setReceivedCash((order.total_cents / 100).toFixed(2)); setMethod('efectivo') }}>Cobrar pedido</button>}
             {staff.role !== 'cocina' && !order.paid_at && order.status !== 'anulado' && <button type="button" className="secondary-utility cancel-order-button" disabled={busy} onClick={() => cancelOrder(order)}>Cancelar pedido</button>}
           </div>
-          {paymentOrderId === order.id && <div className="order-collection"><div><strong>Cuenta Nº {order.ticket_number}</strong><span>{money(order.total_cents)}</span></div><label>Medio de pago<select value={method} onChange={(event) => setMethod(event.target.value as 'efectivo' | 'qr')}><option value="efectivo">Efectivo</option><option value="qr">QR</option></select></label><button type="button" disabled={busy} onClick={() => collectOrder(order)}>Confirmar cobro y generar recibo</button></div>}
+          {paymentOrderId === order.id && <div className="order-collection"><div><strong>Cuenta Nº {order.ticket_number}</strong><span>{money(order.total_cents)}</span></div><label>Medio de pago<select value={method} onChange={(event) => setMethod(event.target.value as 'efectivo' | 'qr')}><option value="efectivo">Efectivo</option><option value="qr">QR</option></select></label>{method === 'efectivo' && <label>Efectivo recibido (Bs)<input type="number" min={(order.total_cents / 100).toFixed(2)} step="0.01" inputMode="decimal" value={receivedCash} onChange={(event) => setReceivedCash(event.target.value)} /><small>Cambio: {money(Math.max(0, Math.round(Number(receivedCash) * 100) - order.total_cents))}</small></label>}<button type="button" disabled={busy || (method === 'efectivo' && (!receivedCash || Math.round(Number(receivedCash) * 100) < order.total_cents))} onClick={() => collectOrder(order)}>Confirmar cobro y generar recibo</button></div>}
         </article>)}
       </div>
     </section>}

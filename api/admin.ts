@@ -137,12 +137,30 @@ export async function POST(request: Request): Promise<Response> {
           : await sql`INSERT INTO public.employees(full_name,job_title,daily_rate_cents,half_day_rate_cents) VALUES(${name},${title},${daily},${half}) RETURNING id`
         return reply({ id: rows[0]?.id }, 201)
       }
+      case 'remove_employee': {
+        const employeeId = id(body.id)
+        if (!employeeId) return bad('Empleado inválido')
+        const rows = await sql`UPDATE public.employees SET active=false,removed_at=now()
+          WHERE id=${employeeId} AND removed_at IS NULL RETURNING id`
+        if (!rows.length) return reply({ error: 'Empleado inexistente o ya retirado' }, 404)
+        return reply({ id: rows[0].id })
+      }
+      case 'restore_employee': {
+        const employeeId = id(body.id)
+        if (!employeeId) return bad('Empleado inválido')
+        const rows = await sql`UPDATE public.employees SET active=true,removed_at=NULL
+          WHERE id=${employeeId} AND removed_at IS NOT NULL RETURNING id`
+        if (!rows.length) return reply({ error: 'Empleado inexistente o ya activo' }, 404)
+        return reply({ id: rows[0].id })
+      }
       case 'shift': {
         const day = isoDate(body.work_date), shift = text(body.shift, 20)
         if (!id(body.employee_id) || !day || !['dia','medio_dia','noche'].includes(shift)) return bad('Turno inválido')
         const rows = await sql`INSERT INTO public.work_shifts(employee_id,work_date,shift,note)
-          VALUES(${id(body.employee_id)},${day},${shift},${text(body.note, 300)})
+          SELECT e.id,${day},${shift},${text(body.note, 300)} FROM public.employees e
+          WHERE e.id=${id(body.employee_id)} AND e.active AND e.removed_at IS NULL
           ON CONFLICT(employee_id,work_date,shift) DO UPDATE SET note=excluded.note RETURNING id`
+        if (!rows.length) return bad('Empleado retirado, inactivo o inexistente')
         return reply({ id: rows[0].id }, 201)
       }
       case 'attendance': {
@@ -150,7 +168,7 @@ export async function POST(request: Request): Promise<Response> {
         if (!id(body.employee_id) || !day || !['dia','medio_dia'].includes(kind)) return bad('Asistencia inválida')
         const rows = await sql`INSERT INTO public.attendance(employee_id,work_date,work_type,earned_cents,note,recorded_by)
           SELECT e.id,${day},${kind},CASE WHEN ${kind}='dia' THEN e.daily_rate_cents ELSE e.half_day_rate_cents END,
-            ${text(body.note, 300)},${access.staff.user_id} FROM public.employees e WHERE e.id=${id(body.employee_id)} AND e.active
+            ${text(body.note, 300)},${access.staff.user_id} FROM public.employees e WHERE e.id=${id(body.employee_id)} AND e.active AND e.removed_at IS NULL
           ON CONFLICT(employee_id,work_date) DO UPDATE SET work_type=excluded.work_type,
             earned_cents=excluded.earned_cents,note=excluded.note,recorded_by=excluded.recorded_by RETURNING id`
         if (!rows.length) return bad('Empleado inactivo o inexistente')

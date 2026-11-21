@@ -1,6 +1,6 @@
 # Identidad visual de Novillo
 
-La interfaz utiliza el logo proporcionado por el restaurante, ubicado en `public/logo-novillo.png`. La paleta se inspira en el toro negro y el atardecer rojo y ámbar. Los colores más vivos se reservan para acciones y estados; las superficies de trabajo mantienen contraste y permiten leer tablas durante turnos largos.
+La interfaz utiliza el logo proporcionado por el restaurante, ubicado en `public/logo-novillo-grill.png`. La paleta se inspira en el toro negro y el atardecer rojo y ámbar. Los colores más vivos se reservan para acciones y estados; las superficies de trabajo mantienen contraste y permiten leer tablas durante turnos largos.
 
 | Uso | Color | Valor |
 | --- | --- | --- |

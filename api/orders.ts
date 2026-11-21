@@ -5,9 +5,11 @@ export async function GET(request: Request): Promise<Response> {
   if (!access) return noAccess()
   const orders = await access.sql`
     SELECT o.id, o.service_date, o.ticket_number, o.table_number, o.payment_method, o.paid_at, o.total_cents, o.status, o.created_at,
+      o.amount_received_cents, o.change_cents, MAX(s.display_name) AS cashier_name,
       COALESCE(json_agg(json_build_object('name', i.product_name, 'presentation', i.presentation, 'quantity', i.quantity, 'unit_price_cents', i.unit_price_cents, 'line_total_cents', i.line_total_cents))
         FILTER (WHERE i.id IS NOT NULL), '[]') AS items
     FROM public.orders o LEFT JOIN public.order_items i ON i.order_id = o.id
+      LEFT JOIN public.staff_access s ON s.user_id=COALESCE(o.paid_by,o.cashier_user_id)
     WHERE o.service_date = (now() AT TIME ZONE 'America/La_Paz')::date
       OR (o.paid_at IS NULL AND o.status <> 'anulado')
     GROUP BY o.id ORDER BY (o.paid_at IS NULL AND o.status <> 'anulado') DESC, o.id DESC LIMIT 100`
