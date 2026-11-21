@@ -282,7 +282,7 @@ function OperationsWithAuth() {
     {isAdmin && <button className={panel === 'resumen' ? 'selected' : ''} onClick={() => setPanel('resumen')}><span className="nav-icon"><PanelIcon name="overview" /></span>Resumen</button>}
     <button className={panel === 'operacion' ? 'selected' : ''} onClick={() => setPanel('operacion')}><span className="nav-icon"><PanelIcon name="sales" /></span>{staff.role === 'cocina' ? 'Cocina' : 'Ventas'}</button>
     {isAdmin && adminTabs.filter(([key]) => key !== 'resumen' && (key !== 'accesos' || staff.role === 'superadministrador')).map(([key, label]) =>
-      <button key={key} className={panel === key ? 'selected' : ''} onClick={() => setPanel(key)}><span className="nav-icon"><PanelIcon name={panelIcons[key]} /></span>{label}</button>)}
+      <button key={key} className={panel === key ? 'selected' : ''} aria-label={label} onClick={() => setPanel(key)}><span className="nav-icon"><PanelIcon name={panelIcons[key]} /></span>{key === 'compras' ? 'Compras' : label}</button>)}
   </nav>
 
   const shell = (content: React.ReactNode, title: string) => <div className={`app-shell${panel === 'operacion' ? ' sales-shell' : ''}`}>
