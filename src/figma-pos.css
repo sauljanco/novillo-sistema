@@ -107,6 +107,7 @@
 :root[data-theme='dark'] .sales-shell .sales-cart-heading{background:#0d0b11}
 :root[data-theme='dark'] .sales-shell .sales-table-select select{background:#292230;border-color:#493d51;color:#e1b5fa}
 :root[data-theme='dark'] .sales-shell .sales-quantity{background:#292230;border-color:#493d51}
+:root[data-theme='dark'] .sales-shell .sales-quantity button{color:#d5a2ef}
 :root[data-theme='dark'] .sales-cart-item-info small b,:root[data-theme='dark'] .sales-shell .sales-cart-contents-heading button{color:#d5a2ef}
 :root[data-theme='dark'] .sales-shell .sales-cart .cart-total strong{color:#f1eaf5}
 
