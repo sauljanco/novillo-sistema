@@ -35,7 +35,7 @@
 :root[data-theme='dark'] .sales-cart .cart-total strong{color:#e2b8f8}
 :root[data-theme='dark'] .cart-total,:root[data-theme='dark'] .metric-grid strong,:root[data-theme='dark'] .overview-line strong{color:var(--ink)}
 :root[data-theme='dark'] .menu-admin-info>span,:root[data-theme='dark'] .sales-product-category,:root[data-theme='dark'] .sales-eyebrow{color:#caa0e6}
-:root[data-theme='dark'] .menu-admin-info p,:root[data-theme='dark'] .sales-product-details .product-name small,:root[data-theme='dark'] .sales-cart .cart-row small{color:var(--muted)}
+:root[data-theme='dark'] .menu-admin-info p,:root[data-theme='dark'] .sales-product-presentation,:root[data-theme='dark'] .sales-cart .cart-row small{color:var(--muted)}
 :root[data-theme='dark'] .menu-admin-empty,:root[data-theme='dark'] .product-editor .product-photo-field{background:var(--surface);border-color:var(--line);color:var(--muted)}
 :root[data-theme='dark'] .admin-table th{background:#292330;color:#c9b9d2}
 :root[data-theme='dark'] .admin-table td{background:var(--surface);color:var(--ink)}
