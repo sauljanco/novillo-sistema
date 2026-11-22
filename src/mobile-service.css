@@ -81,6 +81,7 @@
   .sales-shell .app-main{height:calc(100dvh - 46px)}
   .mobile-brand .novillo-logo{width:39px;height:39px}
   .app-shell .app-topbar,.sales-shell .app-topbar{top:46px;height:44px;min-height:44px}
+  .sales-shell .app-topbar{top:0}
   .sales-shell .sales-view-switch,.sales-shell .sales-view-switch button{height:44px;min-height:44px}
   .sales-shell .work-panel,.sales-shell .work-panel:has(.sales-layout){flex:none;height:calc(100dvh - 90px)}
   .sales-shell .work-panel:has(.sales-layout){padding:8px;overflow:hidden}
