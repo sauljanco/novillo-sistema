@@ -26,6 +26,7 @@
   .app-sidebar .side-profile{display:none}
   .sales-shell .app-main{display:block;height:calc(100dvh - 56px);min-height:0;overflow:hidden}
   .app-shell .app-topbar,.sales-shell .app-topbar{position:sticky;top:56px;display:flex;align-items:center;justify-content:space-between;gap:4px;height:52px;min-height:52px;padding:0 10px;z-index:8}
+  .sales-shell .app-topbar{position:relative;top:0}
   .app-shell .topbar-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
   .sales-shell .topbar-title{display:none}
   .sales-shell .sales-view-switch{gap:2px;min-width:0;height:52px}
