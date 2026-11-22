@@ -4,6 +4,7 @@ import {
   CupSoda,
   LayoutDashboard,
   LogOut,
+  Menu as MenuLines,
   Minus,
   Monitor,
   Moon,
@@ -16,10 +17,11 @@ import {
   Sun,
   UsersRound,
   UtensilsCrossed,
+  X,
   type LucideIcon,
 } from 'lucide-react'
 
-export type IconName = 'overview' | 'sales' | 'staff' | 'inventory' | 'purchases' | 'menu' | 'reports' | 'access' | 'sun' | 'moon' | 'logout' | 'receipt' | 'search' | 'grill' | 'drink' | 'plus' | 'minus'
+export type IconName = 'overview' | 'sales' | 'staff' | 'inventory' | 'purchases' | 'menu' | 'reports' | 'access' | 'sun' | 'moon' | 'logout' | 'receipt' | 'search' | 'grill' | 'drink' | 'plus' | 'minus' | 'menuToggle' | 'close'
 
 const icons: Record<IconName, LucideIcon> = {
   overview: LayoutDashboard,
@@ -39,6 +41,8 @@ const icons: Record<IconName, LucideIcon> = {
   drink: CupSoda,
   plus: Plus,
   minus: Minus,
+  menuToggle: MenuLines,
+  close: X,
 }
 
 export function PanelIcon({ name }: { name: IconName }) {
