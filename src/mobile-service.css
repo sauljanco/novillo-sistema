@@ -24,6 +24,7 @@
   .app-sidebar .panel-nav button .nav-icon{width:30px;height:30px}
   .app-sidebar .panel-nav button .nav-icon svg{width:19px;height:19px}
   .app-sidebar .side-profile{display:none}
+  .sales-shell .app-main{display:block;height:calc(100dvh - 56px);min-height:0;overflow:hidden}
   .app-shell .app-topbar,.sales-shell .app-topbar{position:sticky;top:56px;display:flex;align-items:center;justify-content:space-between;gap:4px;height:52px;min-height:52px;padding:0 10px;z-index:8}
   .app-shell .topbar-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
   .sales-shell .topbar-title{display:none}
@@ -76,10 +77,11 @@
 
 @media (max-width:1000px) and (max-height:600px) and (orientation:landscape){
   .app-shell .app-sidebar,.sales-shell .app-sidebar{height:46px;min-height:46px}
+  .sales-shell .app-main{height:calc(100dvh - 46px)}
   .mobile-brand .novillo-logo{width:39px;height:39px}
   .app-shell .app-topbar,.sales-shell .app-topbar{top:46px;height:44px;min-height:44px}
   .sales-shell .sales-view-switch,.sales-shell .sales-view-switch button{height:44px;min-height:44px}
-  .sales-shell .work-panel,.sales-shell .work-panel:has(.sales-layout){height:calc(100dvh - 90px)}
+  .sales-shell .work-panel,.sales-shell .work-panel:has(.sales-layout){flex:none;height:calc(100dvh - 90px)}
   .sales-shell .work-panel:has(.sales-layout){padding:8px;overflow:hidden}
   .sales-mobile-switch{display:none}
   .sales-shell .sales-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(255px,35%);gap:8px;height:100%}
