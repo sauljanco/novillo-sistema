@@ -1,0 +1,74 @@
+@media print {
+  /* The printer's selected 80 mm roll determines the page height. */
+  @page { size: auto; margin: 0; }
+
+  html, body, #root,
+  .app-shell, .app-main, .work-panel {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  .app-sidebar, .app-topbar,
+  .work-panel > :not(.document-overlay),
+  .document-actions {
+    display: none !important;
+  }
+
+  .document-overlay, .document-preview {
+    display: block !important;
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  .order-document {
+    position: static !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 2mm 2mm 3mm !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    print-color-adjust: exact;
+  }
+
+  .order-document > p, .document-lines small,
+  .receipt-item small, .receipt-header span {
+    color: #000 !important;
+  }
+
+  .document-brand { font-size: 22px; letter-spacing: .08em; }
+  .document-subtitle { font-size: 11px; }
+  .document-number { font-size: 39px; }
+  .document-table { font-size: 16px; }
+  .document-lines { border-color: #000; margin: 13px 0; padding: 7px 0; }
+  .document-lines > div { gap: 6px; padding: 6px 0; font-size: 13px; }
+  .document-lines > div > strong { flex: none; white-space: nowrap; }
+  .document-total { font-size: 17px; }
+
+  .receipt-document { font-size: 12px; line-height: 1.3; }
+  .receipt-header .novillo-logo { width: 58mm; max-width: 100%; }
+  .receipt-rule, .receipt-footer { border-color: #000; }
+  .receipt-item { break-inside: avoid; }
+}

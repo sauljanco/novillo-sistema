@@ -13,6 +13,7 @@ import './sales-compact.css'
 import './design-refinement.css'
 import './figma-pos.css'
 import './mobile-service.css'
+import './print.css'
 
 type Product = { id: string; category: string; name: string; presentation: string; price_cents: number; image_url: string | null }
 type Staff = { display_name: string; role: 'superadministrador' | 'administrador' | 'caja' | 'cocina' }
